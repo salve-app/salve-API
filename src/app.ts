@@ -1,20 +1,20 @@
-import express, { json, Express } from 'express'
-import cors from 'cors'
-import loadEnv from './config/envs'
-import { connectPrismaDb } from './config/database'
+import express, { json, Express } from "express";
+import cors from "cors";
+import loadEnv from "./config/envs";
+import { connectPrismaDb } from "./config/database";
+import { authRouter, usersRouter } from "./routers";
 
-loadEnv()
+loadEnv();
 
-const app: Express = express()
+const app: Express = express();
 
 app
   .use(cors())
   .use(json())
-  .get('/health', (_req, res) => {
-    res.send('Ok').status(200)
-  })
+  .use("/users", usersRouter)
+  .use("/auth", authRouter);
 
 export async function init(): Promise<Express> {
-  connectPrismaDb()
-  return Promise.resolve(app)
+  connectPrismaDb();
+  return Promise.resolve(app);
 }

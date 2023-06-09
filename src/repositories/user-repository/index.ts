@@ -1,8 +1,8 @@
 import { prisma } from "@/config/database";
-import { CreateUserParams } from "@/services/users-service";
+import { ProfileInputData, UserInputData } from "@/services/users-service";
 
 async function findByUsernameOrEmail(username: string, email: string) {
-  return prisma.user.findFirstOrThrow({
+  return prisma.user.findFirst({
     where: {
       OR: [{ email }, { username }],
     },
@@ -17,12 +17,38 @@ async function findByLogin(login: string) {
   });
 }
 
-async function create(data: CreateUserParams) {
+async function createUser(data: UserInputData) {
   return prisma.user.create({
     data: {
       ...data,
     },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+    },
   });
 }
 
-export default { findByUsernameOrEmail, create, findByLogin };
+async function createProfile(data: ProfileInputData) {
+  return prisma.profile.create({
+    data: {
+      ...data,
+    },
+    include: {
+      user: {
+        select: {
+          username: true,
+          email: true,
+        },
+      },
+    },
+  });
+}
+
+export default {
+  findByUsernameOrEmail,
+  createUser,
+  createProfile,
+  findByLogin,
+};

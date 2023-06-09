@@ -1,18 +1,22 @@
-import { NextFunction, Request, Response } from 'express';
-import httpStatus from 'http-status';
-import * as jwt from 'jsonwebtoken';
+import { NextFunction, Request, Response } from "express";
+import httpStatus from "http-status";
+import * as jwt from "jsonwebtoken";
 
-export async function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  const authHeader = req.header('Authorization');
+export async function authenticateToken(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  const authHeader = req.header("Authorization");
   if (!authHeader) return generateUnauthorizedResponse(res);
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(" ")[1];
   if (!token) return generateUnauthorizedResponse(res);
 
   try {
-    const { userId } = jwt.verify(token, process.env.JWT_SECRET) as JWTPayload;
+    const { sub } = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload;
 
-    req.userId = userId;
+    req.userId = +sub;
 
     return next();
   } catch (err) {
@@ -21,11 +25,10 @@ export async function authenticateToken(req: AuthenticatedRequest, res: Response
 }
 
 function generateUnauthorizedResponse(res: Response) {
-  res.status(httpStatus.UNAUTHORIZED).send({message: "Unautorized"});
+  res.status(httpStatus.UNAUTHORIZED).send({ message: "Unautorized" });
 }
 
-export type AuthenticatedRequest = Request & JWTPayload;
-
-type JWTPayload = {
+export type AuthenticatedRequest = Request & UserId;
+interface UserId {
   userId: number;
-};
+}

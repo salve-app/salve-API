@@ -10,11 +10,14 @@ async function signIn(params: SignInParams) {
 
   await validatePasswordOrFail(password, user.password);
 
-  const token = await createSession(user.id);
+  const jwtPayload = {
+    username: user.username,
+    email: user.email,
+  };
+
+  const token = await createSession(jwtPayload, user.id);
 
   return {
-    email: user.email,
-    username: user.username,
     token,
   };
 }
@@ -26,8 +29,11 @@ async function getUserOrFail(login: string) {
   return user;
 }
 
-async function createSession(userId: number) {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET);
+export async function createSession(payload: Object, userId: number) {
+  const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: "1d",
+    subject: userId.toString(),
+  });
 
   return token;
 }

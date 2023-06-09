@@ -1,10 +1,13 @@
-import { Router } from 'express';
-import { validateBody } from '@/middlewares';
-import { userSchema } from '@/schemas';
-import { create } from '@/controllers/users-controller';
+import { Router } from "express";
+import { authenticateToken, validateBody } from "@/middlewares";
+import { profileSchema, userSchema } from "@/schemas";
+import { createUser, createProfile } from "@/controllers/users-controller";
 
 const usersRouter = Router();
 
-usersRouter.post('/signup', validateBody(userSchema), create);
+usersRouter
+  .post("/sign-up", validateBody(userSchema), createUser)
+  .use(authenticateToken)
+  .post("/sign-up/profile", validateBody(profileSchema), createProfile);
 
 export { usersRouter };

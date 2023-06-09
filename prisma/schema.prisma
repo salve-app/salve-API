@@ -24,9 +24,10 @@ model User {
 model Profile {
   id               Int                @id @default(autoincrement())
   fullName         String
-  CPF              String             @unique
+  cpf              String             @unique
   gender           Gender
   birthday         DateTime
+  phoneNumber      String
   userId           Int                @unique
   coins            Decimal            @default(10)
   createdAt        DateTime           @default(now())
@@ -126,7 +127,7 @@ model City {
 
 model State {
   id        Int      @id @default(autoincrement())
-  name      String
+  name      String   @unique
   createdAt DateTime @default(now())
 
   city City[]

@@ -56,15 +56,15 @@ model ProfileToAddress {
 
 model Address {
   id           Int      @id @default(autoincrement())
-  CEP          String
+  cep          String
   neighborhood String
   street       String
   number       String
-  complement   String
-  cityId       Int
+  complement   String?
+  city         String
+  state        String
   createdAt    DateTime @default(now())
 
-  city             City               @relation(fields: [cityId], references: [id])
   ProfileToAddress ProfileToAddress[]
   Save             Save[]
 
@@ -75,10 +75,10 @@ model Save {
   id          Int      @id @default(autoincrement())
   requesterId Int
   providerId  Int?
+  description String
   categoryId  Int
   addressId   Int
   ratingsId   Int      @unique
-  time        DateTime
   status      Status   @default(CREATED)
   createdAt   DateTime @default(now())
 
@@ -111,28 +111,6 @@ model SaveCategory {
   Save Save[]
 
   @@map("saves_categories")
-}
-
-model City {
-  id        Int      @id @default(autoincrement())
-  name      String
-  stateId   Int
-  createdAt DateTime @default(now())
-
-  state   State     @relation(fields: [stateId], references: [id])
-  Address Address[]
-
-  @@map("cities")
-}
-
-model State {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-
-  city City[]
-
-  @@map("states")
 }
 
 enum Gender {

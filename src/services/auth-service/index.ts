@@ -3,8 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import userRepository from "@/repositories/user-repository";
 
-async function signIn(params: SignInParams) {
-  const { login, password } = params;
+async function signIn(data: SignInParams) {
+  const { login, password } = data;
 
   const user = await getUserOrFail(login);
 

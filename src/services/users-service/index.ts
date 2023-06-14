@@ -1,7 +1,8 @@
 import userRepository from "@/repositories/user-repository";
-import { Profile, User } from "@prisma/client";
+import { Address, Profile, User } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { createSession } from "../auth-service";
+import profileRepository from "@/repositories/profile-repository";
 
 async function createUser({ username, email, password }: UserInputData) {
   await checkEmailOrUsernameExists(username, email);
@@ -22,14 +23,27 @@ async function createUser({ username, email, password }: UserInputData) {
   return { token: await createSession(jwtPayload, id) };
 }
 
-async function createProfile(data: ProfileInputData) {
-  const profileWithUser = await userRepository.createProfile(data);
+async function createProfile(data: ProfileInputData, userId: number) {
+  const profileWithUser = await userRepository.createProfile(data, userId);
 
   const jwtPayload = {
     profileWithUser,
   };
 
-  return { token: await createSession(jwtPayload, profileWithUser.userId) };
+  return { token: await createSession(jwtPayload, userId) };
+}
+
+async function createAddress(data: AddressInputData, userId: number) {
+  const profile = await getUserProfileOrThrow(userId);
+
+  const address = await profileRepository.createAddress(data, profile.id);
+
+  const jwtPayload = {
+    profile,
+    address
+  };
+
+  return { token: await createSession(jwtPayload, userId) };
 }
 
 async function checkEmailOrUsernameExists(username: string, email: string) {
@@ -41,11 +55,24 @@ async function checkEmailOrUsernameExists(username: string, email: string) {
   if (userExists) throw new Error("Usuário já existe!");
 }
 
+
+async function getUserProfileOrThrow(userId: number){
+  const profile = await profileRepository.findByUserId(userId);
+
+  if(!profile) throw new Error('O usuário não tem um perfil');
+
+  return profile;
+}
+
 export type UserInputData = Pick<User, "email" | "password" | "username">;
 
 export type ProfileInputData = Pick<
   Profile,
-  "fullName" | "cpf" | "gender" | "birthday" | "phoneNumber" | "userId"
+  "fullName" | "cpf" | "gender" | "birthday" | "phoneNumber"
 >;
 
-export default { createUser, createProfile };
+export type AddressInputData = Omit<Address, "id" | "createdAt"> & {
+  nickname: string;
+};
+
+export default { createUser, createProfile, createAddress };

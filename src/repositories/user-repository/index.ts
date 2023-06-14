@@ -30,10 +30,11 @@ async function createUser(data: UserInputData) {
   });
 }
 
-async function createProfile(data: ProfileInputData) {
+async function createProfile(data: ProfileInputData, userId: number) {
   return prisma.profile.create({
     data: {
       ...data,
+      userId,
     },
     include: {
       user: {

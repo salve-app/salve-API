@@ -3,10 +3,10 @@ import httpStatus from "http-status";
 import authenticationService, { SignInParams } from "@/services/auth-service";
 
 export async function singIn(req: Request, res: Response) {
-  const { login, password } = req.body as SignInParams;
+  const authInput = req.body as SignInParams;
 
   try {
-    const result = await authenticationService.signIn({ login, password });
+    const result = await authenticationService.signIn(authInput);
 
     return res.status(httpStatus.OK).send(result);
   } catch (error) {

@@ -6,6 +6,13 @@ async function findByUserId(userId: number) {
     where: {
       userId,
     },
+    include: {
+      user: {
+        select: {
+          username: true,
+        },
+      },
+    },
   });
 }
 
@@ -35,13 +42,6 @@ async function createAddress(
         create: {
           nickname,
           profileId,
-        },
-      },
-    },
-    include: {
-      ProfileToAddress: {
-        select: {
-          nickname: true,
         },
       },
     },

@@ -14,6 +14,13 @@ async function findByLogin(login: string) {
     where: {
       OR: [{ email: login }, { username: login }],
     },
+    include: {
+      Profile: {
+        include: {
+          ProfileToAddress: true,
+        },
+      },
+    },
   });
 }
 
@@ -40,7 +47,6 @@ async function createProfile(data: ProfileInputData, userId: number) {
       user: {
         select: {
           username: true,
-          email: true,
         },
       },
     },

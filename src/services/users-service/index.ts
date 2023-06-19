@@ -17,30 +17,33 @@ async function createUser({ username, email, password }: UserInputData) {
 
   const jwtPayload = {
     username,
-    email,
   };
 
   return { token: await createSession(jwtPayload, id) };
 }
 
 async function createProfile(data: ProfileInputData, userId: number) {
-  const profileWithUser = await userRepository.createProfile(data, userId);
+  const { user, coins } = await userRepository.createProfile(data, userId);
 
   const jwtPayload = {
-    profileWithUser,
+    username: user.username,
+    coins,
+    hasProfile: true,
   };
 
   return { token: await createSession(jwtPayload, userId) };
 }
 
 async function createAddress(data: AddressInputData, userId: number) {
-  const profile = await getUserProfileOrThrow(userId);
+  const { coins, user, id } = await getUserProfileOrThrow(userId);
 
-  const address = await profileRepository.createAddress(data, profile.id);
+  await profileRepository.createAddress(data, id);
 
   const jwtPayload = {
-    profile,
-    address
+    username: user.username,
+    coins,
+    hasProfile: true,
+    hasAddress: true,
   };
 
   return { token: await createSession(jwtPayload, userId) };
@@ -55,11 +58,10 @@ async function checkEmailOrUsernameExists(username: string, email: string) {
   if (userExists) throw new Error("Usuário já existe!");
 }
 
-
-async function getUserProfileOrThrow(userId: number){
+async function getUserProfileOrThrow(userId: number) {
   const profile = await profileRepository.findByUserId(userId);
 
-  if(!profile) throw new Error('O usuário não tem um perfil');
+  if (!profile) throw new Error("O usuário não tem um perfil");
 
   return profile;
 }

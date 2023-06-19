@@ -1,4 +1,3 @@
-import { User } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import userRepository from "@/repositories/user-repository";
@@ -12,7 +11,9 @@ async function signIn(data: SignInParams) {
 
   const jwtPayload = {
     username: user.username,
-    email: user.email,
+    coins: user.Profile ? user.Profile.coins : 0,
+    hasProfile: !!user.Profile,
+    hasAddress: !!user.Profile?.ProfileToAddress,
   };
 
   const token = await createSession(jwtPayload, user.id);

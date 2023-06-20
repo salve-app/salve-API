@@ -27,7 +27,7 @@ async function createProfile(data: ProfileInputData, userId: number) {
 
   const jwtPayload = {
     username: user.username,
-    coins,
+    coins: +coins,
     hasProfile: true,
   };
 
@@ -41,7 +41,7 @@ async function createAddress(data: AddressInputData, userId: number) {
 
   const jwtPayload = {
     username: user.username,
-    coins,
+    coins: +coins,
     hasProfile: true,
     hasAddress: true,
   };
@@ -58,7 +58,7 @@ async function checkEmailOrUsernameExists(username: string, email: string) {
   if (userExists) throw new Error("Usuário já existe!");
 }
 
-async function getUserProfileOrThrow(userId: number) {
+export async function getUserProfileOrThrow(userId: number) {
   const profile = await profileRepository.findByUserId(userId);
 
   if (!profile) throw new Error("O usuário não tem um perfil");

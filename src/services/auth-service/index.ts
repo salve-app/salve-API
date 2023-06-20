@@ -11,7 +11,7 @@ async function signIn(data: SignInParams) {
 
   const jwtPayload = {
     username: user.username,
-    coins: user.Profile ? user.Profile.coins : 0,
+    coins: user.Profile ? +user.Profile.coins : 0,
     hasProfile: !!user.Profile,
     hasAddress: !!user.Profile?.ProfileToAddress,
   };

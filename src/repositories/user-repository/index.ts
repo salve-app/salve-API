@@ -41,6 +41,7 @@ async function createProfile(data: ProfileInputData, userId: number) {
   return prisma.profile.create({
     data: {
       ...data,
+      coins: 10,
       userId,
     },
     include: {

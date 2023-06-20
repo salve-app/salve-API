@@ -26,6 +26,8 @@ async function createAddress(
     number,
     state,
     street,
+    latitude,
+    longitude,
   }: AddressInputData,
   profileId: number
 ) {
@@ -38,6 +40,8 @@ async function createAddress(
       number,
       state,
       street,
+      latitude,
+      longitude,
       ProfileToAddress: {
         create: {
           nickname,

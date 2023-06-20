@@ -1,6 +1,5 @@
 import savesRepository from "@/repositories/saves-repository";
 import { getUserProfileOrThrow } from "../users-service";
-import { Decimal } from "@prisma/client/runtime";
 
 async function getAllSaveCategories() {
   const categories = await savesRepository.findAllCategories();
@@ -29,6 +28,18 @@ async function getOfferingSaves(userId: number) {
   return savesRepository.findSavesByProviderId(id);
 }
 
+async function getNearbySaves(
+  coordinates: { lat: number; lng: number },
+  userId: number
+) {
+  const { id } = await getUserProfileOrThrow(userId);
+
+  return savesRepository.findSavesByCoordinates(
+    coordinates.lat,
+    coordinates.lng
+  );
+}
+
 enum SaveCategories {
   SOFT = "Suave",
   MEDIUM = "Da pra aguentar",
@@ -48,12 +59,13 @@ export interface AddressForm {
   complement?: string;
   city: string;
   state: string;
-  latitude: Decimal;
-  longitude: Decimal;
+  latitude: number;
+  longitude: number;
 }
 
 export default {
   getAllSaveCategories,
+  getNearbySaves,
   createSave,
   getRequestedSaves,
   getOfferingSaves,

@@ -14,6 +14,7 @@ savesRouter
   .get("/categories", getAllSaveCategories)
   .post("/", createSave)
   .get("/requested", getRequestedSaves)
-  .get("/offering", getOfferingSaves);
+  .get("/offering", getOfferingSaves)
+  .get('/', );
 
 export { savesRouter };

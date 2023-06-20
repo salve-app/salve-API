@@ -33,7 +33,7 @@ export async function getRequestedSaves(
   req: AuthenticatedRequest,
   res: Response
 ) {
-  const {userId} = req;
+  const { userId } = req;
 
   try {
     const requestedSaves = await savesService.getRequestedSaves(userId);
@@ -47,11 +47,28 @@ export async function getOfferingSaves(
   req: AuthenticatedRequest,
   res: Response
 ) {
-  const {userId} = req;
+  const { userId } = req;
 
   try {
     const offeringSaves = await savesService.getOfferingSaves(userId);
     return res.status(httpStatus.OK).send({ offeringSaves });
+  } catch (error) {
+    return res.status(httpStatus.BAD_REQUEST).send(error);
+  }
+}
+
+export async function getNearbySaves(req: AuthenticatedRequest, res: Response) {
+  const lat = +req.query.lat;
+  const lng = +req.query.lng;
+
+  const { userId } = req;
+
+  try {
+    const nearbySaves = await savesService.getNearbySaves(
+      { lat, lng },
+      userId
+    );
+    return res.status(httpStatus.OK).send({ nearbySaves });
   } catch (error) {
     return res.status(httpStatus.BAD_REQUEST).send(error);
   }

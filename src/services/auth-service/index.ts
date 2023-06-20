@@ -13,7 +13,7 @@ async function signIn(data: SignInParams) {
     username: user.username,
     coins: user.Profile ? +user.Profile.coins : 0,
     hasProfile: !!user.Profile,
-    hasAddress: !!user.Profile?.ProfileToAddress,
+    hasAddress: !!user.Profile?.ProfileToAddress.length,
   };
 
   const token = await createSession(jwtPayload, user.id);

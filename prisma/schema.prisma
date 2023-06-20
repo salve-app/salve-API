@@ -29,7 +29,7 @@ model Profile {
   birthday         DateTime
   phoneNumber      String
   userId           Int                @unique
-  coins            Decimal            @default(10)
+  coins            Decimal
   createdAt        DateTime           @default(now())
   ProfileToAddress ProfileToAddress[]
 
@@ -63,6 +63,8 @@ model Address {
   complement   String?
   city         String
   state        String
+  latitude     Decimal
+  longitude    Decimal
   createdAt    DateTime @default(now())
 
   ProfileToAddress ProfileToAddress[]
@@ -78,7 +80,7 @@ model Save {
   description String
   categoryId  Int
   addressId   Int
-  ratingsId   Int      @unique
+  ratingsId   Int?     @unique
   status      Status   @default(CREATED)
   createdAt   DateTime @default(now())
 
@@ -86,7 +88,7 @@ model Save {
   provider  Profile?     @relation("provider", fields: [providerId], references: [id])
   category  SaveCategory @relation(fields: [categoryId], references: [id])
   address   Address      @relation(fields: [addressId], references: [id])
-  rating    Rating       @relation(fields: [ratingsId], references: [id])
+  rating    Rating?      @relation(fields: [ratingsId], references: [id])
 
   @@map("saves")
 }

@@ -8,5 +8,7 @@ export const addressInputSchema = Joi.object({
   complement: Joi.string().allow(""),
   city: Joi.string().required(),
   state: Joi.string().required(),
-  nickname: Joi.string().required(),
+  nickname: Joi.string(),
+  latitude: Joi.number().required(),
+  longitude: Joi.number().required(),
 });

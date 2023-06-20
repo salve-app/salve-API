@@ -1,13 +1,14 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
+
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+
+  extensions = [postgis(version: "3.3.3")]
 }
 
 model User {
@@ -24,19 +25,17 @@ model User {
 model Profile {
   id               Int                @id @default(autoincrement())
   fullName         String
-  cpf              String             @unique
   gender           Gender
   birthday         DateTime
-  phoneNumber      String
-  userId           Int                @unique
   coins            Decimal
   createdAt        DateTime           @default(now())
+  cpf              String             @unique
+  phoneNumber      String
+  userId           Int                @unique
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   ProfileToAddress ProfileToAddress[]
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  Provider  Save[] @relation("provider")
-  Requester Save[] @relation("requester")
+  Provider         Save[]             @relation("provider")
+  Requester        Save[]             @relation("requester")
 
   @@map("profiles")
 }
@@ -46,49 +45,48 @@ model ProfileToAddress {
   addressId Int
   nickname  String
   createdAt DateTime @default(now())
-
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  address Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  address   Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@id([profileId, addressId])
   @@map("profiles_addresses")
 }
 
 model Address {
-  id           Int      @id @default(autoincrement())
-  cep          String
-  neighborhood String
-  street       String
-  number       String
-  complement   String?
-  city         String
-  state        String
-  latitude     Decimal
-  longitude    Decimal
-  createdAt    DateTime @default(now())
-
+  id               Int                     @id @default(autoincrement())
+  neighborhood     String
+  street           String
+  number           String
+  complement       String?
+  createdAt        DateTime                @default(now())
+  cep              String
+  city             String
+  state            String
+  latitude         Float
+  longitude        Float
+  geolocation      Unsupported("geometry(Point, 4326)")
   ProfileToAddress ProfileToAddress[]
   Save             Save[]
 
+  @@index([geolocation], map: "address_idx", type: Gist)
   @@map("addresses")
 }
 
 model Save {
-  id          Int      @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   requesterId Int
   providerId  Int?
-  description String
   categoryId  Int
   addressId   Int
-  ratingsId   Int?     @unique
-  status      Status   @default(CREATED)
-  createdAt   DateTime @default(now())
-
-  requester Profile      @relation("requester", fields: [requesterId], references: [id])
-  provider  Profile?     @relation("provider", fields: [providerId], references: [id])
-  category  SaveCategory @relation(fields: [categoryId], references: [id])
-  address   Address      @relation(fields: [addressId], references: [id])
-  rating    Rating?      @relation(fields: [ratingsId], references: [id])
+  ratingsId   Int?         @unique
+  status      Status       @default(CREATED)
+  createdAt   DateTime     @default(now())
+  description String
+  address     Address      @relation(fields: [addressId], references: [id])
+  category    SaveCategory @relation(fields: [categoryId], references: [id])
+  provider    Profile?     @relation("provider", fields: [providerId], references: [id])
+  rating      Rating?      @relation(fields: [ratingsId], references: [id])
+  requester   Profile      @relation("requester", fields: [requesterId], references: [id])
 
   @@map("saves")
 }
@@ -98,8 +96,7 @@ model Rating {
   request_rating   Int
   provision_rating Int
   createdAt        DateTime @default(now())
-
-  Save Save?
+  Save             Save?
 
   @@map("ratings")
 }
@@ -109,10 +106,18 @@ model SaveCategory {
   name      Categories
   cost      Int
   createdAt DateTime   @default(now())
-
-  Save Save[]
+  Save      Save[]
 
   @@map("saves_categories")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
 }
 
 enum Gender {

@@ -106,11 +106,7 @@ async function getSaveChatList(saveId: number, userId: number) {
   return chatWithLastMessage;
 }
 
-async function getMessagesByChatId(chatId: number) {
-  return chatRepository.findMessagesByChatId(chatId);
-}
-
-async function getSaveOrThrow(saveId: number) {
+export async function getSaveOrThrow(saveId: number) {
   const save = await savesRepository.findById(saveId);
 
   if (!save) throw new Error("Não tem salve");

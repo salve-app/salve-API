@@ -2,7 +2,7 @@ import express, { json, Express } from "express";
 import cors from "cors";
 import loadEnv from "./config/envs";
 import { connectPrismaDb } from "./config/database";
-import { authRouter, savesRouter, usersRouter } from "./routers";
+import { authRouter, chatsRouter, savesRouter, usersRouter } from "./routers";
 
 loadEnv();
 
@@ -13,6 +13,7 @@ app
   .use(json())
   .use("/users", usersRouter)
   .use("/saves", savesRouter)
+  .use("/chats", chatsRouter)
   .use("/auth", authRouter);
 
 export async function init(): Promise<Express> {

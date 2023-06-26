@@ -98,11 +98,12 @@ model Save {
 }
 
 model Chat {
-  id          Int      @id @default(autoincrement())
-  requesterId Int
-  providerId  Int
-  saveId      Int
-  createdAt   DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  requesterId  Int
+  providerId   Int
+  saveId       Int
+  acceptedSave Boolean  @default(false)
+  createdAt    DateTime @default(now())
 
   requester Profile @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
   provider  Profile @relation("provider", fields: [providerId], references: [id], onDelete: Cascade)

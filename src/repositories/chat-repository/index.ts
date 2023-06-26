@@ -13,6 +13,7 @@ async function findChatMessagesBySaveIdAndProvider(
     },
     select: {
       id: true,
+      acceptedSave: true,
       messages: {
         select: {
           id: true,
@@ -79,19 +80,6 @@ async function findChatsBySaveId(saveId: number) {
         take: 1,
       },
     },
-  });
-}
-
-async function findMessagesByChatId(chatId: number) {
-  return prisma.message.findMany({
-    where: {
-      chatId,
-    },
-    select: {
-      ownerId: true,
-      message: true,
-      createdAt: true,
-    },
     orderBy: {
       id: "desc",
     },
@@ -103,6 +91,36 @@ async function findChatById(id: number) {
     where: {
       id,
     },
+    select: {
+      acceptedSave: true,
+      requesterId: true,
+      providerId: true,
+      provider: {
+        select: {
+          id: true,
+          fullName: true,
+        },
+      },
+      messages: {
+        select: {
+          id: true,
+          ownerId: true,
+          message: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+}
+
+async function updateAcceptedSaveByChatId(id: number) {
+  return prisma.chat.update({
+    where: {
+      id,
+    },
+    data: {
+      acceptedSave: true,
+    },
   });
 }
 
@@ -111,6 +129,6 @@ export default {
   createChat,
   createMessage,
   findChatsBySaveId,
-  findMessagesByChatId,
   findChatById,
+  updateAcceptedSaveByChatId,
 };

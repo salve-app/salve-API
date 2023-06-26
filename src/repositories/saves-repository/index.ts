@@ -101,6 +101,7 @@ async function findNearbySavesByCoordinates(
   WHERE extensions.ST_DWithin(
     geolocation,
     extensions.ST_MakePoint(${longitude}, ${latitude})::extensions.geography, ${range}) AND sv."requesterId" <> ${profileId} AND sv.status = 'CREATED'
+  ORDER BY sv.id DESC
 `;
   return saves;
 }

@@ -36,9 +36,10 @@ async function createAddress(
       INSERT INTO addresses (neighborhood, cep, city, complement, number, state, street, latitude, longitude, geolocation)
       VALUES (${neighborhood}, ${cep}, ${city}, ${complement}, ${number}, ${state}, ${street}, ${latitude}, ${longitude}, extensions.ST_MakePoint(${longitude}, ${latitude}));
      `;
+     
     await tsc.$executeRaw`
       INSERT INTO profiles_addresses ("profileId", "addressId", nickname)
-      VALUES (${profileId}, (SELECT id FROM addresses WHERE latitude = ${latitude} AND longitude = ${longitude}), ${nickname});
+      VALUES (${profileId}, (SELECT id FROM addresses WHERE latitude = ${latitude} AND longitude = ${longitude} LIMIT 1), ${nickname});
     `;
   });
 }

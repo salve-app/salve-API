@@ -1,5 +1,11 @@
 import savesRepository from "@/repositories/saves-repository";
 import { getUserProfileOrThrow } from "../users-service";
+import chatRepository from "@/repositories/chat-repository";
+import { MessageInputData } from "@/controllers/saves-controller";
+import {
+  formatSaveContent,
+  getSeparetedSavesAccordinglyUserFunction,
+} from "@/utils/helpers/saves";
 
 async function getAllSaveCategories() {
   const categories = await savesRepository.findAllCategories();
@@ -16,28 +22,100 @@ async function createSave(save: SaveForm, userId: number) {
   await savesRepository.create(save, id);
 }
 
-async function getRequestedSaves(userId: number) {
-  const { id } = await getUserProfileOrThrow(userId);
+async function getMyActiveSaves(userId: number) {
+  const { id: profileId } = await getUserProfileOrThrow(userId);
 
-  return savesRepository.findSavesByRequesterId(id);
-}
+  const myActiveSaves = await savesRepository.findSavesByProfileId(profileId);
 
-async function getOfferingSaves(userId: number) {
-  const { id } = await getUserProfileOrThrow(userId);
+  const formatedSave = formatSaveContent(myActiveSaves);
 
-  return savesRepository.findSavesByProviderId(id);
+  const savesAccordinglyUserFunction = getSeparetedSavesAccordinglyUserFunction(
+    formatedSave,
+    profileId
+  );
+
+  return savesAccordinglyUserFunction;
 }
 
 async function getNearbySaves(
-  coordinates: { lat: number; lng: number },
+  coordinates: { latitude: number; longitude: number },
+  range: number,
   userId: number
 ) {
   const { id } = await getUserProfileOrThrow(userId);
 
-  return savesRepository.findSavesByCoordinates(
-    coordinates.lat,
-    coordinates.lng
+  const nearbySaves = await savesRepository.findNearbySavesByCoordinates(
+    coordinates.latitude,
+    coordinates.longitude,
+    range,
+    id
   );
+
+  return formatSaveContent(nearbySaves);
+}
+
+async function createChatMessage(
+  saveId: number,
+  userId: number,
+  messageData: MessageInputData
+) {
+  const { chatId, message } = messageData;
+
+  const { id: profileId } = await getUserProfileOrThrow(userId);
+
+  const { requesterId } = await getSaveOrThrow(saveId);
+
+  const chat = await chatRepository.findChatById(chatId);
+
+  if (!chat) throw new Error("Not found - chat não encontrado");
+
+  if (chat.requesterId !== requesterId)
+    throw new Error("Forbidden - chat não encontrado");
+
+  await chatRepository.createMessage(chatId, message, profileId);
+}
+
+async function getChatMessages(saveId: number, userId: number) {
+  const { id: providerId } = await getUserProfileOrThrow(userId);
+
+  const { requesterId } = await getSaveOrThrow(saveId);
+
+  const chat = await chatRepository.findChatMessagesBySaveIdAndProvider(
+    saveId,
+    providerId
+  );
+
+  if (!chat) return chatRepository.createChat(saveId, requesterId, providerId);
+
+  return chat;
+}
+
+async function getSaveChatList(saveId: number, userId: number) {
+  await getUserProfileOrThrow(userId);
+
+  await getSaveOrThrow(saveId);
+
+  const chat = await chatRepository.findChatsBySaveId(saveId);
+
+  const chatWithLastMessage = chat.map(({ id, provider, messages }) => ({
+    id,
+    provider,
+    lastMessage: messages[0].message,
+  }));
+
+  return chatWithLastMessage;
+}
+
+async function getMessagesByChatId(chatId: number) {
+  return chatRepository.findMessagesByChatId(chatId);
+}
+
+async function getSaveOrThrow(saveId: number) {
+  const save = await savesRepository.findById(saveId);
+
+  if (!save) throw new Error("Não tem salve");
+
+  return save;
 }
 
 enum SaveCategories {
@@ -67,6 +145,8 @@ export default {
   getAllSaveCategories,
   getNearbySaves,
   createSave,
-  getRequestedSaves,
-  getOfferingSaves,
+  createChatMessage,
+  getChatMessages,
+  getSaveChatList,
+  getMyActiveSaves,
 };

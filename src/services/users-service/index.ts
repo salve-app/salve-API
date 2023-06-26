@@ -40,6 +40,7 @@ async function createAddress(data: AddressInputData, userId: number) {
   await profileRepository.createAddress(data, id);
 
   const jwtPayload = {
+    profileId: id,
     username: user.username,
     coins: +coins,
     hasProfile: true,

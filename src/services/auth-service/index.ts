@@ -10,6 +10,7 @@ async function signIn(data: SignInParams) {
   await validatePasswordOrFail(password, user.password);
 
   const jwtPayload = {
+    profileId: user.Profile.id,
     username: user.username,
     coins: user.Profile ? +user.Profile.coins : 0,
     hasProfile: !!user.Profile,

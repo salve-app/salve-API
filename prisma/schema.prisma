@@ -36,6 +36,8 @@ model Profile {
   ProfileToAddress ProfileToAddress[]
   Provider         Save[]             @relation("provider")
   Requester        Save[]             @relation("requester")
+  ProviderChat     Chat[]             @relation("provider")
+  RequesterChat    Chat[]             @relation("requester")
 
   @@map("profiles")
 }
@@ -53,18 +55,19 @@ model ProfileToAddress {
 }
 
 model Address {
-  id               Int                     @id @default(autoincrement())
-  neighborhood     String
-  street           String
-  number           String
-  complement       String?
-  createdAt        DateTime                @default(now())
-  cep              String
-  city             String
-  state            String
-  latitude         Float
-  longitude        Float
-  geolocation      Unsupported("geometry(Point, 4326)")
+  id           Int                                  @id @default(autoincrement())
+  neighborhood String
+  street       String
+  number       String
+  complement   String?
+  createdAt    DateTime                             @default(now())
+  cep          String
+  city         String
+  state        String
+  latitude     Float
+  longitude    Float
+  geolocation  Unsupported("geometry(Point, 4326)")
+
   ProfileToAddress ProfileToAddress[]
   Save             Save[]
 
@@ -73,22 +76,54 @@ model Address {
 }
 
 model Save {
-  id          Int          @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   requesterId Int
   providerId  Int?
   categoryId  Int
   addressId   Int
-  ratingsId   Int?         @unique
-  status      Status       @default(CREATED)
-  createdAt   DateTime     @default(now())
+  ratingsId   Int?     @unique
+  status      Status   @default(CREATED)
+  createdAt   DateTime @default(now())
   description String
-  address     Address      @relation(fields: [addressId], references: [id])
-  category    SaveCategory @relation(fields: [categoryId], references: [id])
-  provider    Profile?     @relation("provider", fields: [providerId], references: [id])
-  rating      Rating?      @relation(fields: [ratingsId], references: [id])
-  requester   Profile      @relation("requester", fields: [requesterId], references: [id])
+
+  address   Address      @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  category  SaveCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  provider  Profile?     @relation("provider", fields: [providerId], references: [id], onDelete: Cascade)
+  rating    Rating?      @relation(fields: [ratingsId], references: [id], onDelete: Cascade)
+  requester Profile      @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  Chat Chat[]
 
   @@map("saves")
+}
+
+model Chat {
+  id          Int      @id @default(autoincrement())
+  requesterId Int
+  providerId  Int
+  saveId      Int
+  createdAt   DateTime @default(now())
+
+  requester Profile @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  provider  Profile @relation("provider", fields: [providerId], references: [id], onDelete: Cascade)
+  save      Save    @relation(fields: [saveId], references: [id], onDelete: Cascade)
+
+  messages Message[] @relation("messages")
+
+  @@unique([saveId, providerId])
+  @@map("chats")
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  ownerId   Int
+  chatId    Int
+  message   String
+  createdAt DateTime @default(now())
+
+  chat Chat @relation("messages", fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
 }
 
 model Rating {

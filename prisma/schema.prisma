@@ -130,7 +130,7 @@ model Message {
 model Rating {
   id               Int      @id @default(autoincrement())
   request_rating   Int
-  provision_rating Int
+  provision_rating Int?
   createdAt        DateTime @default(now())
   Save             Save?
 

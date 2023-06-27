@@ -89,7 +89,7 @@ export async function getSaveChatList(
 
   try {
     const chatList = await savesService.getSaveChatList(saveId, userId);
-    
+
     return res.status(httpStatus.OK).send({ chatList });
   } catch (error) {
     return res.status(httpStatus.BAD_REQUEST).send(error);
@@ -108,6 +108,41 @@ export async function createChatMessage(
 
   try {
     await savesService.createChatMessage(saveId, userId, messageData);
+
+    return res.sendStatus(httpStatus.CREATED);
+  } catch (error) {
+    return res.status(httpStatus.BAD_REQUEST).send(error);
+  }
+}
+export async function updateSaveStatusToInProgress(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  const saveId = +req.params.id as number;
+
+  const { userId } = req;
+
+  try {
+    await savesService.updateSaveStatusToInProgress(saveId, userId);
+
+    return res.sendStatus(httpStatus.CREATED);
+  } catch (error) {
+    return res.status(httpStatus.BAD_REQUEST).send(error);
+  }
+}
+
+export async function updateSaveStatusToComplete(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  const saveId = +req.params.id as number;
+
+  const { userId } = req;
+
+  const { rating } = req.body;
+
+  try {
+    await savesService.updateSaveStatusToComplete(saveId, rating, userId);
 
     return res.sendStatus(httpStatus.CREATED);
   } catch (error) {

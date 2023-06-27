@@ -106,6 +106,41 @@ async function getSaveChatList(saveId: number, userId: number) {
   return chatWithLastMessage;
 }
 
+async function updateSaveStatusToInProgress(saveId: number, userId: number) {
+  const { id: providerId } = await getUserProfileOrThrow(userId);
+
+  const { status } = await getSaveOrThrow(saveId);
+
+  if (status !== "CREATED") throw new Error("Bad request");
+
+  const chat = await chatRepository.findChatMessagesBySaveIdAndProvider(
+    saveId,
+    providerId
+  );
+
+  if (!chat) throw new Error("Not found");
+
+  if (!chat.acceptedSave) throw new Error("Bad request");
+
+  await savesRepository.updateSaveStatusToInProgress(saveId, providerId);
+}
+
+async function updateSaveStatusToComplete(
+  saveId: number,
+  rating: number,
+  userId: number
+) {
+  const { id: requesterId } = await getUserProfileOrThrow(userId);
+
+  const { status, requesterId: saveRequesterId } = await getSaveOrThrow(saveId);
+
+  if (status !== "IN_PROGRESS") throw new Error("Bad request");
+
+  if (requesterId !== saveRequesterId) throw new Error("Forbidden");
+
+  await savesRepository.updateSaveStatusToComplete(saveId, +rating);
+}
+
 export async function getSaveOrThrow(saveId: number) {
   const save = await savesRepository.findById(saveId);
 
@@ -138,11 +173,13 @@ export interface AddressForm {
 }
 
 export default {
-  getAllSaveCategories,
-  getNearbySaves,
   createSave,
   createChatMessage,
+  getAllSaveCategories,
+  getNearbySaves,
   getChatMessages,
   getSaveChatList,
   getMyActiveSaves,
+  updateSaveStatusToInProgress,
+  updateSaveStatusToComplete,
 };

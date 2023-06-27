@@ -158,10 +158,40 @@ async function findById(id: number) {
   });
 }
 
+async function updateSaveStatusToInProgress(id: number, providerId: number) {
+  return prisma.save.update({
+    where: {
+      id,
+    },
+    data: {
+      providerId,
+      status: "IN_PROGRESS",
+    },
+  });
+}
+
+async function updateSaveStatusToComplete(id: number, rating: number) {
+  return prisma.save.update({
+    where: {
+      id,
+    },
+    data: {
+      status: "COMPLETED",
+      rating: {
+        create: {
+          request_rating: rating,
+        },
+      },
+    },
+  });
+}
+
 export default {
-  findAllCategories,
   create,
+  findAllCategories,
   findSavesByProfileId,
   findNearbySavesByCoordinates,
   findById,
+  updateSaveStatusToInProgress,
+  updateSaveStatusToComplete,
 };

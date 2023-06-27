@@ -8,6 +8,8 @@ import {
   getMyActiveSaves,
   getSaveChatList,
   createChatMessage,
+  updateSaveStatusToInProgress,
+  updateSaveStatusToComplete,
 } from "@/controllers/saves-controller";
 
 const savesRouter = Router();
@@ -20,6 +22,8 @@ savesRouter
   .get("/:id/chat", getChatMessages)
   .get("/:id/chat/list", getSaveChatList)
   .post("/", createSave)
-  .post("/:id/chat", createChatMessage);
+  .post("/:id/chat", createChatMessage)
+  .put("/:id/start", updateSaveStatusToInProgress)
+  .put("/:id/finish", updateSaveStatusToComplete);
 
 export { savesRouter };

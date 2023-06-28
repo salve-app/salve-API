@@ -1,10 +1,10 @@
-import { Router } from "express";
-import { validateBody } from "@/middlewares";
-import { signInSchema } from "@/schemas";
-import { singIn } from "@/controllers/auth-controller";
+import { singIn } from '@/controllers/auth-controller'
+import { validateBody } from '@/middlewares'
+import { signInSchema } from '@/schemas'
+import { Router } from 'express'
 
-const authRouter = Router();
+const authRouter = Router()
 
-authRouter.post("/sign-in", validateBody(signInSchema), singIn);
+authRouter.post('/sign-in', validateBody(signInSchema), singIn)
 
-export { authRouter };
+export { authRouter }

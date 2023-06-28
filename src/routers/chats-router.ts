@@ -1,11 +1,15 @@
-import { Router } from "express";
-import { authenticateToken } from "@/middlewares";
-import { getMessagesByChatId, updateProviderAccept } from "@/controllers/chats-controller";
+import {
+	getMessagesByChatId,
+	updateProviderAccept,
+} from '@/controllers/chats-controller'
+import { authenticateToken } from '@/middlewares'
+import { Router } from 'express'
 
-const chatsRouter = Router();
+const chatsRouter = Router()
 
 chatsRouter
-  .all("/*", authenticateToken)
-  .get("/:id/messages", getMessagesByChatId).put('/:id/accept', updateProviderAccept);
+	.all('/*', authenticateToken)
+	.get('/:id/messages', getMessagesByChatId)
+	.put('/:id/accept', updateProviderAccept)
 
-export { chatsRouter };
+export { chatsRouter }

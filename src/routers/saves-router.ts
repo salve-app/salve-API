@@ -1,29 +1,29 @@
-import { Router } from "express";
-import { authenticateToken } from "@/middlewares";
 import {
-  createSave,
-  getAllSaveCategories,
-  getChatMessages,
-  getNearbySaves,
-  getMyActiveSaves,
-  getSaveChatList,
-  createChatMessage,
-  updateSaveStatusToInProgress,
-  updateSaveStatusToComplete,
-} from "@/controllers/saves-controller";
+	createSave,
+	getAllSaveCategories,
+	getChatMessages,
+	getNearbySaves,
+	getMyActiveSaves,
+	getSaveChatList,
+	createChatMessage,
+	updateSaveStatusToInProgress,
+	updateSaveStatusToComplete,
+} from '@/controllers/saves-controller'
+import { authenticateToken } from '@/middlewares'
+import { Router } from 'express'
 
-const savesRouter = Router();
+const savesRouter = Router()
 
 savesRouter
-  .all("/*", authenticateToken)
-  .get("/categories", getAllSaveCategories)
-  .get("/", getNearbySaves)
-  .get("/me/active", getMyActiveSaves)
-  .get("/:id/chat", getChatMessages)
-  .get("/:id/chat/list", getSaveChatList)
-  .post("/", createSave)
-  .post("/:id/chat", createChatMessage)
-  .put("/:id/start", updateSaveStatusToInProgress)
-  .put("/:id/finish", updateSaveStatusToComplete);
+	.all('/*', authenticateToken)
+	.post('/', createSave)
+	.get('/', getNearbySaves)
+	.get('/me/active', getMyActiveSaves)
+	.get('/categories', getAllSaveCategories)
+	.get('/:id/chat', getChatMessages)
+	.get('/:id/chat/list', getSaveChatList)
+	.post('/:id/chat', createChatMessage)
+	.put('/:id/start', updateSaveStatusToInProgress)
+	.put('/:id/finish', updateSaveStatusToComplete)
 
-export { savesRouter };
+export { savesRouter }

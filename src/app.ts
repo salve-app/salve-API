@@ -1,22 +1,23 @@
-import express, { json, Express } from "express";
-import cors from "cors";
-import loadEnv from "./config/envs";
-import { connectPrismaDb } from "./config/database";
-import { authRouter, chatsRouter, savesRouter, usersRouter } from "./routers";
+import cors from 'cors'
+import express, { json, Express } from 'express'
 
-loadEnv();
+import { connectPrismaDb } from './config/database'
+import loadEnv from './config/envs'
+import { authRouter, chatsRouter, savesRouter, usersRouter } from './routers'
 
-const app: Express = express();
+loadEnv()
+
+const app: Express = express()
 
 app
-  .use(cors())
-  .use(json())
-  .use("/users", usersRouter)
-  .use("/saves", savesRouter)
-  .use("/chats", chatsRouter)
-  .use("/auth", authRouter);
+	.use(cors())
+	.use(json())
+	.use('/users', usersRouter)
+	.use('/saves', savesRouter)
+	.use('/chats', chatsRouter)
+	.use('/auth', authRouter)
 
 export async function init(): Promise<Express> {
-  connectPrismaDb();
-  return Promise.resolve(app);
+	connectPrismaDb()
+	return Promise.resolve(app)
 }

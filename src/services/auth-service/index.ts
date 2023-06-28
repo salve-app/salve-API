@@ -1,48 +1,48 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import userRepository from "@/repositories/user-repository";
+import userRepository from '@/repositories/users-repository'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
 async function signIn(data: SignInParams) {
-  const { login, password } = data;
+	const { login, password } = data
 
-  const user = await getUserOrFail(login);
+	const user = await getUserOrFail(login)
 
-  await validatePasswordOrFail(password, user.password);
+	await validatePasswordOrFail(password, user.password)
 
-  const jwtPayload = {
-    profileId: user.Profile.id,
-    username: user.username,
-    coins: user.Profile ? +user.Profile.coins : 0,
-    hasProfile: !!user.Profile,
-    hasAddress: !!user.Profile?.ProfileToAddress.length,
-  };
+	const jwtPayload = {
+		profileId: user.Profile.id,
+		username: user.username,
+		coins: user.Profile ? +user.Profile.coins : 0,
+		hasProfile: !!user.Profile,
+		hasAddress: !!user.Profile?.ProfileToAddress.length,
+	}
 
-  const token = await createSession(jwtPayload, user.id);
+	const token = await createSession(jwtPayload, user.id)
 
-  return {
-    token,
-  };
+	return {
+		token,
+	}
 }
 
 async function getUserOrFail(login: string) {
-  const user = await userRepository.findByLogin(login);
-  if (!user) throw new Error("Invalid credentials");
+	const user = await userRepository.findByLogin(login)
+	if (!user) throw new Error('Invalid credentials')
 
-  return user;
+	return user
 }
 
 export async function createSession(payload: Object, userId: number) {
-  const token = jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: "1d",
-    subject: userId.toString(),
-  });
+	const token = jwt.sign(payload, process.env.JWT_SECRET, {
+		expiresIn: '1d',
+		subject: userId.toString(),
+	})
 
-  return token;
+	return token
 }
 
 async function validatePasswordOrFail(password: string, userPassword: string) {
-  const isPasswordValid = await bcrypt.compare(password, userPassword);
-  if (!isPasswordValid) throw new Error("Invalid credentials");
+	const isPasswordValid = await bcrypt.compare(password, userPassword)
+	if (!isPasswordValid) throw new Error('Invalid credentials')
 }
 
 export type SignInParams = {
@@ -50,4 +50,4 @@ export type SignInParams = {
   password: string;
 };
 
-export default { signIn };
+export default { signIn }

@@ -1,80 +1,80 @@
-import { prisma } from "@/config/database";
-import { SaveForm } from "@/services/saves-service";
+import { prisma } from '@/config/database'
+import { SaveForm } from '@/services/saves-service'
 
 async function findAllCategories() {
-  return prisma.saveCategory.findMany({
-    select: {
-      id: true,
-      name: true,
-      cost: true,
-    },
-  });
+	return prisma.saveCategory.findMany({
+		select: {
+			id: true,
+			name: true,
+			cost: true,
+		},
+	})
 }
 
 async function findSavesByProfileId(profileId: number) {
-  return prisma.save.findMany({
-    where: {
-      OR: [
-        {
-          requesterId: profileId,
-        },
-        {
-          providerId: profileId,
-        },
-      ],
-      NOT: {
-        status: "COMPLETED",
-      },
-    },
-    orderBy: {
-      id: "desc",
-    },
-    select: {
-      id: true,
-      description: true,
-      status: true,
-      address: {
-        select: {
-          cep: true,
-          city: true,
-          complement: true,
-          latitude: true,
-          longitude: true,
-          neighborhood: true,
-          number: true,
-          street: true,
-          state: true,
-        },
-      },
-      category: {
-        select: {
-          name: true,
-          cost: true,
-        },
-      },
-      requester: {
-        select: {
-          id: true,
-          fullName: true,
-        },
-      },
-      provider: {
-        select: {
-          id: true,
-          fullName: true,
-        },
-      },
-    },
-  });
+	return prisma.save.findMany({
+		where: {
+			OR: [
+				{
+					requesterId: profileId,
+				},
+				{
+					providerId: profileId,
+				},
+			],
+			NOT: {
+				status: 'COMPLETED',
+			},
+		},
+		orderBy: {
+			id: 'desc',
+		},
+		select: {
+			id: true,
+			description: true,
+			status: true,
+			address: {
+				select: {
+					cep: true,
+					city: true,
+					complement: true,
+					latitude: true,
+					longitude: true,
+					neighborhood: true,
+					number: true,
+					street: true,
+					state: true,
+				},
+			},
+			category: {
+				select: {
+					name: true,
+					cost: true,
+				},
+			},
+			requester: {
+				select: {
+					id: true,
+					fullName: true,
+				},
+			},
+			provider: {
+				select: {
+					id: true,
+					fullName: true,
+				},
+			},
+		},
+	})
 }
 
 async function findNearbySavesByCoordinates(
-  latitude: number,
-  longitude: number,
-  range: number,
-  profileId: number
+	latitude: number,
+	longitude: number,
+	range: number,
+	profileId: number
 ) {
-  const saves = await prisma.$queryRaw`
+	const saves = await prisma.$queryRaw`
   SELECT  sv.id, sv.description, sv.status,
           json_build_object(
             'cep', ad.cep,
@@ -102,96 +102,96 @@ async function findNearbySavesByCoordinates(
     geolocation,
     extensions.ST_MakePoint(${longitude}, ${latitude})::extensions.geography, ${range}) AND sv."requesterId" <> ${profileId} AND sv.status = 'CREATED'
   ORDER BY sv.id DESC
-`;
-  return saves;
+`
+	return saves
 }
 
 async function create(save: SaveForm, profileId: number) {
-  return prisma.$transaction(async (tsx) => {
-    const {
-      neighborhood,
-      cep,
-      city,
-      complement,
-      number,
-      state,
-      street,
-      latitude,
-      longitude,
-    } = save.address;
+	return prisma.$transaction(async (tsx) => {
+		const {
+			neighborhood,
+			cep,
+			city,
+			complement,
+			number,
+			state,
+			street,
+			latitude,
+			longitude,
+		} = save.address
 
-    await tsx.$executeRaw` INSERT INTO addresses (neighborhood, cep, city, complement, number, state, street, latitude, longitude, geolocation)
-    VALUES (${neighborhood}, ${cep}, ${city}, ${complement}, ${number}, ${state}, ${street}, ${latitude}, ${longitude}, extensions.ST_MakePoint(${longitude}, ${latitude}))`;
+		await tsx.$executeRaw` INSERT INTO addresses (neighborhood, cep, city, complement, number, state, street, latitude, longitude, geolocation)
+    VALUES (${neighborhood}, ${cep}, ${city}, ${complement}, ${number}, ${state}, ${street}, ${latitude}, ${longitude}, extensions.ST_MakePoint(${longitude}, ${latitude}))`
 
-    const { id: addressId } = await tsx.address.findFirst({
-      where: { latitude, longitude },
-    });
+		const { id: addressId } = await tsx.address.findFirst({
+			where: { latitude, longitude },
+		})
 
-    await tsx.save.create({
-      data: {
-        description: save.description,
-        requester: {
-          connect: {
-            id: profileId,
-          },
-        },
-        address: {
-          connect: {
-            id: addressId,
-          },
-        },
-        category: {
-          connect: {
-            id: save.categoryId,
-          },
-        },
-      },
-    });
-  });
+		await tsx.save.create({
+			data: {
+				description: save.description,
+				requester: {
+					connect: {
+						id: profileId,
+					},
+				},
+				address: {
+					connect: {
+						id: addressId,
+					},
+				},
+				category: {
+					connect: {
+						id: save.categoryId,
+					},
+				},
+			},
+		})
+	})
 }
 
 async function findById(id: number) {
-  return prisma.save.findUnique({
-    where: {
-      id,
-    },
-  });
+	return prisma.save.findUnique({
+		where: {
+			id,
+		},
+	})
 }
 
 async function updateSaveStatusToInProgress(id: number, providerId: number) {
-  return prisma.save.update({
-    where: {
-      id,
-    },
-    data: {
-      providerId,
-      status: "IN_PROGRESS",
-    },
-  });
+	return prisma.save.update({
+		where: {
+			id,
+		},
+		data: {
+			providerId,
+			status: 'IN_PROGRESS',
+		},
+	})
 }
 
 async function updateSaveStatusToComplete(id: number, rating: number) {
-  return prisma.save.update({
-    where: {
-      id,
-    },
-    data: {
-      status: "COMPLETED",
-      rating: {
-        create: {
-          request_rating: rating,
-        },
-      },
-    },
-  });
+	return prisma.save.update({
+		where: {
+			id,
+		},
+		data: {
+			status: 'COMPLETED',
+			rating: {
+				create: {
+					request_rating: rating,
+				},
+			},
+		},
+	})
 }
 
 export default {
-  create,
-  findAllCategories,
-  findSavesByProfileId,
-  findNearbySavesByCoordinates,
-  findById,
-  updateSaveStatusToInProgress,
-  updateSaveStatusToComplete,
-};
+	create,
+	findAllCategories,
+	findSavesByProfileId,
+	findNearbySavesByCoordinates,
+	findById,
+	updateSaveStatusToInProgress,
+	updateSaveStatusToComplete,
+}

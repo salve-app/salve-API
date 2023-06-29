@@ -1,5 +1,5 @@
+import { unprocessableEntity } from '@/errors'
 import { NextFunction, Request, Response } from 'express'
-import httpStatus from 'http-status'
 import { ObjectSchema } from 'joi'
 
 export function validateBody<T>(schema: ObjectSchema<T>): ValidationMiddleware {
@@ -21,15 +21,17 @@ function validate(schema: ObjectSchema, type: 'body' | 'params') {
 		if (!error) {
 			next()
 		} else {
-			res
-				.status(httpStatus.BAD_REQUEST)
-				.send(error.details.map((d) => d.message))
+			const { code, message, name } = unprocessableEntity(
+				error.details.map((d) => ({ message: d.message, type: d.context.key }))
+			)
+
+			res.status(code).send({ name, message })
 		}
 	}
 }
 
 type ValidationMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => void;
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => void

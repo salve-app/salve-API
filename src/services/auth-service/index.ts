@@ -46,8 +46,8 @@ async function validatePasswordOrFail(password: string, userPassword: string) {
 }
 
 export type SignInParams = {
-  login: string;
-  password: string;
-};
+	login: string
+	password: string
+}
 
 export default { signIn }

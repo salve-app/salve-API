@@ -52,10 +52,7 @@ async function createAddress(data: AddressInputData, userId: number) {
 }
 
 async function checkEmailOrUsernameExists(username: string, email: string) {
-	const userExists = await userRepository.findByUsernameOrEmail(
-		username,
-		email
-	)
+	const userExists = await userRepository.findByUsernameOrEmail(username, email)
 
 	if (userExists) throw new Error('Usuário já existe!')
 }
@@ -68,15 +65,15 @@ export async function getUserProfileOrThrow(userId: number) {
 	return profile
 }
 
-export type UserInputData = Pick<User, 'email' | 'password' | 'username'>;
+export type UserInputData = Pick<User, 'email' | 'password' | 'username'>
 
 export type ProfileInputData = Pick<
-  Profile,
-  'fullName' | 'cpf' | 'gender' | 'birthday' | 'phoneNumber'
->;
+	Profile,
+	'fullName' | 'cpf' | 'gender' | 'birthday' | 'phoneNumber'
+>
 
 export type AddressInputData = Omit<Address, 'id' | 'createdAt'> & {
-  nickname: string;
-};
+	nickname: string
+}
 
 export default { createUser, createProfile, createAddress }

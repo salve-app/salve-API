@@ -17,7 +17,7 @@ export function getSeparetedSavesAccordinglyUserFunction(
 }
 
 enum SaveCategories {
-  SOFT = 'Suave',
-  MEDIUM = 'Da pra aguentar',
-  HARD = 'Urgente',
+	SOFT = 'Suave',
+	MEDIUM = 'Da pra aguentar',
+	HARD = 'Urgente',
 }

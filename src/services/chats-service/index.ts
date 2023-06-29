@@ -6,7 +6,7 @@ async function getMessagesByChatId(chatId: number, userId: number) {
 	const { id: profileId } = await getUserProfileOrThrow(userId)
 
 	const { requesterId, providerId, provider, messages, acceptedSave } =
-    await getChatOrThrow(chatId)
+		await getChatOrThrow(chatId)
 
 	if (requesterId !== profileId && providerId !== profileId)
 		throw new Error('Forbidden')

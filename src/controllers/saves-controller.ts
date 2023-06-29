@@ -150,7 +150,7 @@ export async function updateSaveStatusToComplete(
 	}
 }
 export interface MessageInputData {
-  chatId: number;
-  profileId: number;
-  message: string;
+	chatId: number
+	profileId: number
+	message: string
 }

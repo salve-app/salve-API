@@ -28,7 +28,7 @@ function generateUnauthorizedResponse(res: Response) {
 	res.status(httpStatus.UNAUTHORIZED).send({ message: 'Unautorized' })
 }
 
-export type AuthenticatedRequest = Request & UserId;
+export type AuthenticatedRequest = Request & UserId
 interface UserId {
-  userId: number;
+	userId: number
 }

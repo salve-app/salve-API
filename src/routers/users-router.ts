@@ -4,8 +4,7 @@ import {
 	createAddress,
 } from '@/controllers/users-controller'
 import { authenticateToken, validateBody } from '@/middlewares'
-import { profileSchema, userSchema } from '@/schemas'
-import { addressInputSchema } from '@/schemas/addresses-schemas'
+import { profileSchema, userSchema, addressInputSchema } from '@/schemas'
 import { Router } from 'express'
 
 const usersRouter = Router()

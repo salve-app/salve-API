@@ -27,10 +27,7 @@ export async function createProfile(req: AuthenticatedRequest, res: Response) {
 	const { userId } = req
 
 	try {
-		const { token } = await userService.createProfile(
-			{ ...profileData },
-			userId
-		)
+		const { token } = await userService.createProfile({ ...profileData }, userId)
 		return res.status(httpStatus.CREATED).send({ token })
 	} catch (error) {
 		if (error.name === 'DuplicatedEmailError') {
@@ -45,10 +42,7 @@ export async function createAddress(req: AuthenticatedRequest, res: Response) {
 	const { userId } = req
 
 	try {
-		const { token } = await userService.createAddress(
-			{ ...addressData },
-			userId
-		)
+		const { token } = await userService.createAddress({ ...addressData }, userId)
 		return res.status(httpStatus.CREATED).send({ token })
 	} catch (error) {
 		if (error.name === 'DuplicatedEmailError') {

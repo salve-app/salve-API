@@ -151,26 +151,26 @@ export async function getSaveOrThrow(saveId: number) {
 }
 
 enum SaveCategories {
-  SOFT = 'Suave',
-  MEDIUM = 'Da pra aguentar',
-  HARD = 'Urgente',
+	SOFT = 'Suave',
+	MEDIUM = 'Da pra aguentar',
+	HARD = 'Urgente',
 }
 export interface SaveForm {
-  description: string;
-  categoryId: number;
-  cost: number;
-  address: AddressForm;
+	description: string
+	categoryId: number
+	cost: number
+	address: AddressForm
 }
 export interface AddressForm {
-  cep: string;
-  neighborhood: string;
-  street: string;
-  number: string;
-  complement?: string;
-  city: string;
-  state: string;
-  latitude: number;
-  longitude: number;
+	cep: string
+	neighborhood: string
+	street: string
+	number: string
+	complement?: string
+	city: string
+	state: string
+	latitude: number
+	longitude: number
 }
 
 export default {

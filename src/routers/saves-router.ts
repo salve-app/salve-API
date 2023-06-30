@@ -21,11 +21,10 @@ savesRouter
 	.get('/me/active', getMyActiveSaves)
 	.get('/categories', getAllSaveCategories)
 	.post('/', validateBody(saveSchema), createSave)
-	.use(validateParams(idSchema))
-	.get('/:id/chat', getChatMessages)
-	.get('/:id/chat/list', getSaveChatList)
-	.post('/:id/chat', createChatMessage)
-	.put('/:id/start', updateSaveStatusToInProgress)
-	.put('/:id/finish', updateSaveStatusToComplete)
+	.get('/:id/chat', validateParams(idSchema), getChatMessages)
+	.get('/:id/chat/list', validateParams(idSchema), getSaveChatList)
+	.post('/:id/chat', validateParams(idSchema), createChatMessage)
+	.put('/:id/start', validateParams(idSchema), updateSaveStatusToInProgress)
+	.put('/:id/finish', validateParams(idSchema), updateSaveStatusToComplete)
 
 export { savesRouter }

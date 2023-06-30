@@ -3,8 +3,8 @@ import userRepository from '@/repositories/users-repository'
 import { Address, Profile, User } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { createSession } from '../auth-service'
-import { conflict, unprocessableEntity } from '@/errors'
-import { getAddressByCepOrThrow, removeCepMask } from '@/utils/helpers/address'
+import { conflict, notFound } from '@/errors'
+import { getAddressByCepOrThrow } from '@/utils/helpers/addresses'
 import { badRequest } from '@/errors/badRequest-error'
 
 async function createUser({ username, email, password }: UserInputData) {
@@ -34,7 +34,7 @@ async function createProfile(data: ProfileInputData, userId: number) {
 
 	const jwtPayload = {
 		username: user.username,
-		coins: +coins,
+		coins: coins.toNumber(),
 		hasProfile: true,
 	}
 
@@ -51,7 +51,7 @@ async function createAddress(data: AddressInputData, userId: number) {
 	const jwtPayload = {
 		profileId,
 		username: user.username,
-		coins: +coins,
+		coins: coins.toNumber(),
 		hasProfile: true,
 		hasAddress: true,
 	}
@@ -64,9 +64,9 @@ export default { createUser, createProfile, createAddress }
 async function throwIfEmailOrUsernameExists(username: string, email: string) {
 	const userResult = await userRepository.findByUsernameOrEmail(username, email)
 
-	if (userResult.email === email) throw conflict('Email não disponível!')
+	if (userResult?.email === email) throw conflict('Email não disponível!')
 
-	if (userResult.username === username)
+	if (userResult?.username === username)
 		throw conflict('Nome de usuário não disponível!')
 }
 
@@ -85,7 +85,7 @@ async function throwIfUserIdExists(userId: number) {
 export async function getUserProfileOrThrow(userId: number) {
 	const profile = await profileRepository.findByUserId(userId)
 
-	if (!profile) throw new Error('O usuário não tem um perfil')
+	if (!profile) throw notFound('O usuário não tem um perfil')
 
 	return profile
 }

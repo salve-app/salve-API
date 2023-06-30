@@ -147,6 +147,17 @@ async function create(save: SaveForm, profileId: number) {
 				},
 			},
 		})
+
+		await tsx.profile.update({
+			where: {
+				id: profileId,
+			},
+			data: {
+				coins: {
+					decrement: save.cost,
+				},
+			},
+		})
 	})
 }
 

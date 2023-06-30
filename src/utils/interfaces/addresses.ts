@@ -5,4 +5,5 @@ export interface ViaCepResult {
 	bairro: string
 	localidade: string
 	uf: string
+	erro?: boolean
 }

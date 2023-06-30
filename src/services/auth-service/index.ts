@@ -1,3 +1,4 @@
+import { unauthorized } from '@/errors'
 import userRepository from '@/repositories/users-repository'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
@@ -12,7 +13,7 @@ async function signIn(data: SignInParams) {
 	const jwtPayload = {
 		profileId: user.Profile.id,
 		username: user.username,
-		coins: user.Profile ? +user.Profile.coins : 0,
+		coins: user.Profile ? user.Profile.coins.toNumber() : 0,
 		hasProfile: !!user.Profile,
 		hasAddress: !!user.Profile?.ProfileToAddress.length,
 	}
@@ -26,7 +27,8 @@ async function signIn(data: SignInParams) {
 
 async function getUserOrFail(login: string) {
 	const user = await userRepository.findByLogin(login)
-	if (!user) throw new Error('Invalid credentials')
+
+	if (!user) throw unauthorized()
 
 	return user
 }
@@ -42,7 +44,7 @@ export async function createSession(payload: Object, userId: number) {
 
 async function validatePasswordOrFail(password: string, userPassword: string) {
 	const isPasswordValid = await bcrypt.compare(password, userPassword)
-	if (!isPasswordValid) throw new Error('Invalid credentials')
+	if (!isPasswordValid) throw unauthorized()
 }
 
 export type SignInParams = {

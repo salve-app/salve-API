@@ -1,21 +1,26 @@
 import { AuthenticatedRequest } from '@/middlewares'
 import savesService from '@/services/saves-service'
-import { Response } from 'express'
+import { NextFunction, Response } from 'express'
 import httpStatus from 'http-status'
 
 export async function getAllSaveCategories(
 	req: AuthenticatedRequest,
-	res: Response
+	res: Response,
+	next: NextFunction
 ) {
 	try {
 		const categories = await savesService.getAllSaveCategories()
 		return res.status(httpStatus.OK).send({ categories })
 	} catch (error) {
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 
-export async function createSave(req: AuthenticatedRequest, res: Response) {
+export async function createSave(
+	req: AuthenticatedRequest,
+	res: Response,
+	next: NextFunction
+) {
 	const saveData = req.body
 
 	const { userId } = req
@@ -25,13 +30,14 @@ export async function createSave(req: AuthenticatedRequest, res: Response) {
 
 		return res.sendStatus(httpStatus.CREATED)
 	} catch (error) {
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 
 export async function getMyActiveSaves(
 	req: AuthenticatedRequest,
-	res: Response
+	res: Response,
+	next: NextFunction
 ) {
 	const { userId } = req
 
@@ -39,11 +45,15 @@ export async function getMyActiveSaves(
 		const mySaves = await savesService.getMyActiveSaves(userId)
 		return res.status(httpStatus.OK).send({ mySaves })
 	} catch (error) {
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 
-export async function getNearbySaves(req: AuthenticatedRequest, res: Response) {
+export async function getNearbySaves(
+	req: AuthenticatedRequest,
+	res: Response,
+	next: NextFunction
+) {
 	const latitude = +req.query.latitude
 	const longitude = +req.query.longitude
 	const range = +req.query.range
@@ -58,13 +68,14 @@ export async function getNearbySaves(req: AuthenticatedRequest, res: Response) {
 		)
 		return res.status(httpStatus.OK).send({ nearbySaves })
 	} catch (error) {
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 
 export async function getChatMessages(
 	req: AuthenticatedRequest,
-	res: Response
+	res: Response,
+	next: NextFunction
 ) {
 	const saveId = +req.params.id as number
 
@@ -75,13 +86,14 @@ export async function getChatMessages(
 
 		return res.status(httpStatus.OK).send({ chat })
 	} catch (error) {
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 
 export async function getSaveChatList(
 	req: AuthenticatedRequest,
-	res: Response
+	res: Response,
+	next: NextFunction
 ) {
 	const saveId = +req.params.id as number
 
@@ -92,13 +104,14 @@ export async function getSaveChatList(
 
 		return res.status(httpStatus.OK).send({ chatList })
 	} catch (error) {
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 
 export async function createChatMessage(
 	req: AuthenticatedRequest,
-	res: Response
+	res: Response,
+	next: NextFunction
 ) {
 	const saveId = +req.params.id as number
 
@@ -111,12 +124,13 @@ export async function createChatMessage(
 
 		return res.sendStatus(httpStatus.CREATED)
 	} catch (error) {
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 export async function updateSaveStatusToInProgress(
 	req: AuthenticatedRequest,
-	res: Response
+	res: Response,
+	next: NextFunction
 ) {
 	const saveId = +req.params.id as number
 
@@ -127,13 +141,14 @@ export async function updateSaveStatusToInProgress(
 
 		return res.sendStatus(httpStatus.CREATED)
 	} catch (error) {
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 
 export async function updateSaveStatusToComplete(
 	req: AuthenticatedRequest,
-	res: Response
+	res: Response,
+	next: NextFunction
 ) {
 	const saveId = +req.params.id as number
 
@@ -146,11 +161,10 @@ export async function updateSaveStatusToComplete(
 
 		return res.sendStatus(httpStatus.CREATED)
 	} catch (error) {
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 export interface MessageInputData {
 	chatId: number
-	profileId: number
 	message: string
 }

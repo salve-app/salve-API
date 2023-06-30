@@ -92,6 +92,7 @@ async function findChatById(id: number) {
 			id,
 		},
 		select: {
+			id: true,
 			acceptedSave: true,
 			requesterId: true,
 			providerId: true,

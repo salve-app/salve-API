@@ -5,8 +5,10 @@ import {
 	formatSaveContent,
 	getSeparetedSavesAccordinglyUserFunction,
 } from '@/utils/helpers/saves'
-
 import { getUserProfileOrThrow } from '../users-service'
+import { getAddressByCepOrThrow } from '@/utils/helpers/addresses'
+import { badRequest, forbidden, notFound } from '@/errors'
+import { getChatListWithLastMessage } from '@/utils/helpers/chats'
 
 async function getAllSaveCategories() {
 	const categories = await savesRepository.findAllCategories()
@@ -18,9 +20,13 @@ async function getAllSaveCategories() {
 }
 
 async function createSave(save: SaveForm, userId: number) {
-	const { id } = await getUserProfileOrThrow(userId)
+	const { id: profileId, coins } = await getUserProfileOrThrow(userId)
 
-	await savesRepository.create(save, id)
+	await getAddressByCepOrThrow(save.address.cep)
+
+	throwIfProfileCoinsIsLessThanSaveCost(save.cost, coins.toNumber())
+
+	await savesRepository.create(save, profileId)
 }
 
 async function getMyActiveSaves(userId: number) {
@@ -60,18 +66,18 @@ async function createChatMessage(
 	userId: number,
 	messageData: MessageInputData
 ) {
-	const { chatId, message } = messageData
+	const { message } = messageData
 
 	const { id: profileId } = await getUserProfileOrThrow(userId)
 
 	const { requesterId } = await getSaveOrThrow(saveId)
 
-	const chat = await chatRepository.findChatById(chatId)
-
-	if (!chat) throw new Error('Not found - chat não encontrado')
-
-	if (chat.requesterId !== requesterId)
-		throw new Error('Forbidden - chat não encontrado')
+	const { id: chatId } = await getChatOrCreateIfNotExist(
+		messageData.chatId,
+		saveId,
+		requesterId,
+		profileId
+	)
 
 	await chatRepository.createMessage(chatId, message, profileId)
 }
@@ -79,14 +85,12 @@ async function createChatMessage(
 async function getChatMessages(saveId: number, userId: number) {
 	const { id: providerId } = await getUserProfileOrThrow(userId)
 
-	const { requesterId } = await getSaveOrThrow(saveId)
+	await getSaveOrThrow(saveId)
 
 	const chat = await chatRepository.findChatMessagesBySaveIdAndProvider(
 		saveId,
 		providerId
 	)
-
-	if (!chat) return chatRepository.createChat(saveId, requesterId, providerId)
 
 	return chat
 }
@@ -98,13 +102,9 @@ async function getSaveChatList(saveId: number, userId: number) {
 
 	const chat = await chatRepository.findChatsBySaveId(saveId)
 
-	const chatWithLastMessage = chat.map(({ id, provider, messages }) => ({
-		id,
-		provider,
-		lastMessage: messages[0].message,
-	}))
+	const chatListWithLastMessage = getChatListWithLastMessage(chat)
 
-	return chatWithLastMessage
+	return chatListWithLastMessage
 }
 
 async function updateSaveStatusToInProgress(saveId: number, userId: number) {
@@ -112,16 +112,9 @@ async function updateSaveStatusToInProgress(saveId: number, userId: number) {
 
 	const { status } = await getSaveOrThrow(saveId)
 
-	if (status !== 'CREATED') throw new Error('Bad request')
+	throwIfStatusIsNotCreated(status)
 
-	const chat = await chatRepository.findChatMessagesBySaveIdAndProvider(
-		saveId,
-		providerId
-	)
-
-	if (!chat) throw new Error('Not found')
-
-	if (!chat.acceptedSave) throw new Error('Bad request')
+	throwIfChatNotExist(saveId, providerId)
 
 	await savesRepository.updateSaveStatusToInProgress(saveId, providerId)
 }
@@ -135,19 +128,77 @@ async function updateSaveStatusToComplete(
 
 	const { status, requesterId: saveRequesterId } = await getSaveOrThrow(saveId)
 
-	if (status !== 'IN_PROGRESS') throw new Error('Bad request')
+	throwIfSaveIsNotInProgress(status)
 
-	if (requesterId !== saveRequesterId) throw new Error('Forbidden')
+	throwIfRequesterIdIsNotValid(requesterId, saveRequesterId)
 
 	await savesRepository.updateSaveStatusToComplete(saveId, +rating)
+}
+
+export default {
+	createSave,
+	createChatMessage,
+	getAllSaveCategories,
+	getNearbySaves,
+	getChatMessages,
+	getSaveChatList,
+	getMyActiveSaves,
+	updateSaveStatusToInProgress,
+	updateSaveStatusToComplete,
+}
+
+function throwIfProfileCoinsIsLessThanSaveCost(cost: number, coins: number) {
+	if (cost > coins) throw badRequest('O usuário não possui coins o suficiente')
+}
+
+function throwIfStatusIsNotCreated(status: string) {
+	if (status !== 'CREATED') throw badRequest('Status não pode ser alterado')
 }
 
 export async function getSaveOrThrow(saveId: number) {
 	const save = await savesRepository.findById(saveId)
 
-	if (!save) throw new Error('Não tem salve')
+	if (!save) throw notFound('Salve não encontrado!')
 
 	return save
+}
+
+async function getChatOrCreateIfNotExist(
+	chatId: number,
+	saveId: number,
+	requesterId: number,
+	ownerMessageId: number
+) {
+	const chat = await chatRepository.findChatById(chatId)
+
+	if (!chat && ownerMessageId !== requesterId)
+		return chatRepository.createChat(saveId, requesterId, ownerMessageId)
+
+	return chat
+}
+
+async function throwIfChatNotExist(saveId: number, providerId: number) {
+	const chat = await chatRepository.findChatMessagesBySaveIdAndProvider(
+		saveId,
+		providerId
+	)
+
+	if (!chat) throw notFound('Chat não existe!')
+
+	if (!chat.acceptedSave) throw badRequest('O salvador ainda não foi aceito!')
+}
+
+function throwIfSaveIsNotInProgress(status: string) {
+	if (status !== 'IN_PROGRESS')
+		throw badRequest('O salve não está em progresso!')
+}
+
+function throwIfRequesterIdIsNotValid(
+	requesterId: number,
+	saveRequesterId: number
+) {
+	if (requesterId !== saveRequesterId)
+		throw forbidden('Você não tem permissão para isso!')
 }
 
 enum SaveCategories {
@@ -171,16 +222,4 @@ export interface AddressForm {
 	state: string
 	latitude: number
 	longitude: number
-}
-
-export default {
-	createSave,
-	createChatMessage,
-	getAllSaveCategories,
-	getNearbySaves,
-	getChatMessages,
-	getSaveChatList,
-	getMyActiveSaves,
-	updateSaveStatusToInProgress,
-	updateSaveStatusToComplete,
 }

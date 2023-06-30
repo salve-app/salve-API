@@ -1,5 +1,5 @@
+import { unauthorized } from '@/errors'
 import { NextFunction, Request, Response } from 'express'
-import httpStatus from 'http-status'
 import * as jwt from 'jsonwebtoken'
 
 export async function authenticateToken(
@@ -25,7 +25,9 @@ export async function authenticateToken(
 }
 
 function generateUnauthorizedResponse(res: Response) {
-	res.status(httpStatus.UNAUTHORIZED).send({ message: 'Unautorized' })
+	const { code, message, name } = unauthorized()
+
+	res.status(code).send({ message, name })
 }
 
 export type AuthenticatedRequest = Request & UserId

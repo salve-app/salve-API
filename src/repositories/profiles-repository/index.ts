@@ -16,6 +16,14 @@ async function findByUserId(userId: number) {
 	})
 }
 
+async function findByCpf(cpf: string) {
+	return prisma.profile.findUnique({
+		where: {
+			cpf,
+		},
+	})
+}
+
 async function createAddress(
 	{
 		neighborhood,
@@ -46,5 +54,6 @@ async function createAddress(
 
 export default {
 	findByUserId,
+	findByCpf,
 	createAddress,
 }

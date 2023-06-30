@@ -2,11 +2,13 @@ import profileRepository from '@/repositories/profiles-repository'
 import userRepository from '@/repositories/users-repository'
 import { Address, Profile, User } from '@prisma/client'
 import bcrypt from 'bcrypt'
-
 import { createSession } from '../auth-service'
+import { conflict, unprocessableEntity } from '@/errors'
+import { getAddressByCepOrThrow, removeCepMask } from '@/utils/helpers/address'
+import { badRequest } from '@/errors/badRequest-error'
 
 async function createUser({ username, email, password }: UserInputData) {
-	await checkEmailOrUsernameExists(username, email)
+	await throwIfEmailOrUsernameExists(username, email)
 
 	const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -24,6 +26,10 @@ async function createUser({ username, email, password }: UserInputData) {
 }
 
 async function createProfile(data: ProfileInputData, userId: number) {
+	await throwIfCpfExists(data.cpf)
+
+	await throwIfUserIdExists(userId)
+
 	const { user, coins } = await userRepository.createProfile(data, userId)
 
 	const jwtPayload = {
@@ -36,12 +42,14 @@ async function createProfile(data: ProfileInputData, userId: number) {
 }
 
 async function createAddress(data: AddressInputData, userId: number) {
-	const { coins, user, id } = await getUserProfileOrThrow(userId)
+	await throwIfAddressNotExists(data)
 
-	await profileRepository.createAddress(data, id)
+	const { coins, user, id: profileId } = await getUserProfileOrThrow(userId)
+
+	await profileRepository.createAddress(data, profileId)
 
 	const jwtPayload = {
-		profileId: id,
+		profileId,
 		username: user.username,
 		coins: +coins,
 		hasProfile: true,
@@ -51,10 +59,27 @@ async function createAddress(data: AddressInputData, userId: number) {
 	return { token: await createSession(jwtPayload, userId) }
 }
 
-async function checkEmailOrUsernameExists(username: string, email: string) {
-	const userExists = await userRepository.findByUsernameOrEmail(username, email)
+export default { createUser, createProfile, createAddress }
 
-	if (userExists) throw new Error('Usuário já existe!')
+async function throwIfEmailOrUsernameExists(username: string, email: string) {
+	const userResult = await userRepository.findByUsernameOrEmail(username, email)
+
+	if (userResult.email === email) throw conflict('Email não disponível!')
+
+	if (userResult.username === username)
+		throw conflict('Nome de usuário não disponível!')
+}
+
+async function throwIfCpfExists(cpf: string) {
+	const profile = await profileRepository.findByCpf(cpf)
+
+	if (profile) throw conflict('Este CPF não está disponível')
+}
+
+async function throwIfUserIdExists(userId: number) {
+	const profile = await profileRepository.findByUserId(userId)
+
+	if (profile) throw conflict('Usuário já possui perfil cadastrado!')
 }
 
 export async function getUserProfileOrThrow(userId: number) {
@@ -63,6 +88,19 @@ export async function getUserProfileOrThrow(userId: number) {
 	if (!profile) throw new Error('O usuário não tem um perfil')
 
 	return profile
+}
+
+async function throwIfAddressNotExists(address: AddressInputData) {
+	const addressResult = await getAddressByCepOrThrow(address.cep)
+
+	const addressResultKeys = Object.keys(addressResult)
+
+	const filteringAddressResult = addressResultKeys.filter(
+		(e) => address[e] !== addressResult[e]
+	)
+
+	if (filteringAddressResult.length !== addressResultKeys.length)
+		throw badRequest('Endereço não condiz com o CEP inserido')
 }
 
 export type UserInputData = Pick<User, 'email' | 'password' | 'username'>
@@ -75,5 +113,3 @@ export type ProfileInputData = Pick<
 export type AddressInputData = Omit<Address, 'id' | 'createdAt'> & {
 	nickname: string
 }
-
-export default { createUser, createProfile, createAddress }

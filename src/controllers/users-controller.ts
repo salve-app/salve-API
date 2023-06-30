@@ -4,10 +4,14 @@ import userService, {
 	ProfileInputData,
 	AddressInputData,
 } from '@/services/users-service'
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import httpStatus from 'http-status'
 
-export async function createUser(req: Request, res: Response) {
+export async function createUser(
+	req: Request,
+	res: Response,
+	next: NextFunction
+) {
 	const userData = req.body as UserInputData
 
 	try {
@@ -15,14 +19,15 @@ export async function createUser(req: Request, res: Response) {
 
 		return res.status(httpStatus.CREATED).send({ token })
 	} catch (error) {
-		if (error.name === 'DuplicatedEmailError') {
-			return res.status(httpStatus.CONFLICT).send(error)
-		}
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 
-export async function createProfile(req: AuthenticatedRequest, res: Response) {
+export async function createProfile(
+	req: AuthenticatedRequest,
+	res: Response,
+	next: NextFunction
+) {
 	const profileData = req.body as ProfileInputData
 	const { userId } = req
 
@@ -30,14 +35,15 @@ export async function createProfile(req: AuthenticatedRequest, res: Response) {
 		const { token } = await userService.createProfile({ ...profileData }, userId)
 		return res.status(httpStatus.CREATED).send({ token })
 	} catch (error) {
-		if (error.name === 'DuplicatedEmailError') {
-			return res.status(httpStatus.CONFLICT).send(error)
-		}
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }
 
-export async function createAddress(req: AuthenticatedRequest, res: Response) {
+export async function createAddress(
+	req: AuthenticatedRequest,
+	res: Response,
+	next: NextFunction
+) {
 	const addressData = req.body as AddressInputData
 	const { userId } = req
 
@@ -45,9 +51,6 @@ export async function createAddress(req: AuthenticatedRequest, res: Response) {
 		const { token } = await userService.createAddress({ ...addressData }, userId)
 		return res.status(httpStatus.CREATED).send({ token })
 	} catch (error) {
-		if (error.name === 'DuplicatedEmailError') {
-			return res.status(httpStatus.CONFLICT).send(error)
-		}
-		return res.status(httpStatus.BAD_REQUEST).send(error)
+		next(error)
 	}
 }

@@ -23,3 +23,5 @@ export async function init(): Promise<Express> {
 	connectPrismaDb()
 	return Promise.resolve(app)
 }
+
+export default app

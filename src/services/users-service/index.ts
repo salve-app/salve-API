@@ -3,7 +3,7 @@ import userRepository from '@/repositories/users-repository'
 import { Address, Profile, User } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { createSession } from '../auth-service'
-import { conflict, notFound } from '@/errors'
+import { conflict, notFound, unauthorized } from '@/errors'
 import { getAddressByCepOrThrow } from '@/utils/helpers/addresses'
 import { badRequest } from '@/errors/badRequest-error'
 
@@ -42,9 +42,9 @@ async function createProfile(data: ProfileInputData, userId: number) {
 }
 
 async function createAddress(data: AddressInputData, userId: number) {
-	await throwIfAddressNotExists(data)
-
 	const { coins, user, id: profileId } = await getUserProfileOrThrow(userId)
+
+	await throwIfAddressNotExists(data)
 
 	await profileRepository.createAddress(data, profileId)
 
@@ -85,7 +85,7 @@ async function throwIfUserIdExists(userId: number) {
 export async function getUserProfileOrThrow(userId: number) {
 	const profile = await profileRepository.findByUserId(userId)
 
-	if (!profile) throw notFound('O usuário não tem um perfil')
+	if (!profile) throw unauthorized('O usuário não tem um perfil')
 
 	return profile
 }
@@ -93,13 +93,11 @@ export async function getUserProfileOrThrow(userId: number) {
 async function throwIfAddressNotExists(address: AddressInputData) {
 	const addressResult = await getAddressByCepOrThrow(address.cep)
 
-	const addressResultKeys = Object.keys(addressResult)
+	const addressResultIsDifferentFromAddressInput = Object.keys(
+		addressResult
+	).some((e) => address[e] !== addressResult[e])
 
-	const filteringAddressResult = addressResultKeys.filter(
-		(e) => address[e] !== addressResult[e]
-	)
-
-	if (filteringAddressResult.length !== addressResultKeys.length)
+	if (addressResultIsDifferentFromAddressInput)
 		throw badRequest('Endereço não condiz com o CEP inserido')
 }
 

@@ -10,7 +10,7 @@ async function findByUsernameOrEmail(username: string, email: string) {
 }
 
 async function findByLogin(login: string) {
-	return prisma.user.findFirstOrThrow({
+	return prisma.user.findFirst({
 		where: {
 			OR: [{ email: login }, { username: login }],
 		},

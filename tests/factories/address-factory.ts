@@ -1,5 +1,33 @@
+import { prisma } from '@/config/database'
 import { AddressInputData } from '@/services/users-service'
 import { faker } from '@faker-js/faker'
+
+export async function createAddress(profileId: number) {
+	const {
+		neighborhood,
+		cep,
+		city,
+		complement,
+		nickname,
+		number,
+		state,
+		street,
+		latitude,
+		longitude,
+	} = generateValidAddressWithNickname()
+
+	return prisma.$transaction(async (tsc) => {
+		await tsc.$executeRaw`
+      INSERT INTO addresses (neighborhood, cep, city, complement, number, state, street, latitude, longitude, geolocation)
+      VALUES (${neighborhood}, ${cep}, ${city}, ${complement}, ${number}, ${state}, ${street}, ${latitude}, ${longitude}, extensions.ST_MakePoint(${longitude}, ${latitude}));
+     `
+
+		await tsc.$executeRaw`
+      INSERT INTO profiles_addresses ("profileId", "addressId", nickname)
+      VALUES (${profileId}, (SELECT id FROM addresses WHERE latitude = ${latitude} AND longitude = ${longitude} LIMIT 1), ${nickname});
+    `
+	})
+}
 
 export function generateValidAddressWithNickname(): AddressInputData {
 	return {
@@ -59,4 +87,3 @@ export function generateAddressWithNonExistentCep(): AddressInputData {
 		nickname: 'Home',
 	}
 }
-

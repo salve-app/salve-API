@@ -1,8 +1,8 @@
 import authenticationService, { SignInParams } from '@/services/auth-service'
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import httpStatus from 'http-status'
 
-export async function singIn(req: Request, res: Response) {
+export async function singIn(req: Request, res: Response, next: NextFunction) {
 	const authInput = req.body as SignInParams
 
 	try {
@@ -10,6 +10,6 @@ export async function singIn(req: Request, res: Response) {
 
 		return res.status(httpStatus.OK).send(result)
 	} catch (error) {
-		return res.status(httpStatus.UNAUTHORIZED).send({})
+		next(error)
 	}
 }

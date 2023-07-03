@@ -28,3 +28,20 @@ export async function createProfileToken(
 		subject: userId.toString(),
 	})
 }
+
+export function generateValidCredentials(login: string, password: string) {
+	return {
+		login,
+		password,
+	}
+}
+
+export function generateCredentialsWithInvalidLogin(
+	login: string,
+	password: string
+) {
+	return {
+		login,
+		password,
+	}
+}

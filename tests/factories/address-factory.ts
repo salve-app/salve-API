@@ -1,6 +1,7 @@
 import { prisma } from '@/config/database'
 import { AddressInputData } from '@/services/users-service'
 import { faker } from '@faker-js/faker'
+import { Address } from '@prisma/client'
 
 export async function createAddress(profileId: number) {
 	const {
@@ -26,6 +27,35 @@ export async function createAddress(profileId: number) {
       INSERT INTO profiles_addresses ("profileId", "addressId", nickname)
       VALUES (${profileId}, (SELECT id FROM addresses WHERE latitude = ${latitude} AND longitude = ${longitude} LIMIT 1), ${nickname});
     `
+	})
+}
+
+export async function createAddressWithoutNickname(address: Partial<Address>) {
+	const {
+		neighborhood,
+		cep,
+		city,
+		complement,
+		number,
+		state,
+		street,
+		latitude,
+		longitude,
+	} = address
+
+	return prisma.$transaction(async (tsx) => {
+		await tsx.$executeRaw`
+      		INSERT INTO addresses (neighborhood, cep, city, complement, number, state, street, latitude, longitude, geolocation)
+     		VALUES (${neighborhood}, ${cep}, ${city}, ${complement}, ${number}, ${state}, ${street}, ${latitude}, ${longitude}, extensions.ST_MakePoint(${longitude}, ${latitude}));
+	  	`
+		const { id: addressId } = await tsx.address.findFirst({
+			where: { latitude, longitude },
+			select: {
+				id: true,
+			},
+		})
+
+		return addressId
 	})
 }
 
@@ -55,6 +85,20 @@ export function generateValidAddress() {
 		state: 'RJ',
 		latitude: -22.757629,
 		longitude: -43.446023,
+	}
+}
+
+export function generateDistantValidAddress() {
+	return {
+		neighborhood: 'Centro',
+		street: 'Rua Corinto Luíz Furtado',
+		number: '30',
+		complement: '',
+		cep: '26130-560',
+		city: 'Belford Roxo',
+		state: 'RJ',
+		latitude: -22.761547,
+		longitude: -43.403146,
 	}
 }
 

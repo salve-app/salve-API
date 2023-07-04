@@ -29,6 +29,24 @@ export async function createProfileToken(
 	})
 }
 
+export async function createAddressToken(
+	{ id: profileId, coins }: Partial<Profile>,
+	{ username, id: userId }: Partial<User>
+) {
+	const jwtPayload = {
+		profileId,
+		username: username,
+		coins: coins.toNumber(),
+		hasProfile: true,
+		hasAddress: true,
+	}
+
+	return jwt.sign(jwtPayload, process.env.JWT_SECRET, {
+		expiresIn: '1d',
+		subject: userId.toString(),
+	})
+}
+
 export function generateValidCredentials(login: string, password: string) {
 	return {
 		login,

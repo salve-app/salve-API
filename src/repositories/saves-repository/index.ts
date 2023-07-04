@@ -1,5 +1,6 @@
 import { prisma } from '@/config/database'
 import { SaveForm } from '@/services/saves-service'
+import { Save } from '@/utils/interfaces/saves'
 
 async function findAllCategories() {
 	return prisma.saveCategory.findMany({
@@ -11,7 +12,7 @@ async function findAllCategories() {
 	})
 }
 
-async function findSavesByProfileId(profileId: number) {
+async function findSavesByProfileId(profileId: number): Promise<Array<Save>> {
 	return prisma.save.findMany({
 		where: {
 			OR: [
@@ -35,6 +36,7 @@ async function findSavesByProfileId(profileId: number) {
 			status: true,
 			address: {
 				select: {
+					id: true,
 					cep: true,
 					city: true,
 					complement: true,
@@ -48,6 +50,7 @@ async function findSavesByProfileId(profileId: number) {
 			},
 			category: {
 				select: {
+					id: true,
 					name: true,
 					cost: true,
 				},
@@ -73,10 +76,11 @@ async function findNearbySavesByCoordinates(
 	longitude: number,
 	range: number,
 	profileId: number
-) {
-	const saves = await prisma.$queryRaw`
+): Promise<Array<Save>> {
+	const saves = (await prisma.$queryRaw`
   SELECT  sv.id, sv.description, sv.status,
           json_build_object(
+			'id', ad.id,
             'cep', ad.cep,
             'city', ad.city,
             'complement', ad.complement,
@@ -88,10 +92,12 @@ async function findNearbySavesByCoordinates(
             'state', ad.state
           ) AS address,
           json_build_object(
+			'id', ct.id,
             'name', ct."name",
             'cost', ct."cost"
           ) AS category,
           json_build_object(
+			'id', pf.id,
             'fullName', pf."fullName"
           ) AS requester
   FROM saves sv
@@ -102,7 +108,7 @@ async function findNearbySavesByCoordinates(
     geolocation,
     extensions.ST_MakePoint(${longitude}, ${latitude})::extensions.geography, ${range}) AND sv."requesterId" <> ${profileId} AND sv.status = 'CREATED'
   ORDER BY sv.id DESC
-`
+`) as Array<Save>
 	return saves
 }
 

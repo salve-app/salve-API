@@ -13,6 +13,26 @@ export async function cleanDb() {
 	await prisma.message.deleteMany({})
 	await prisma.chat.deleteMany({})
 	await prisma.profileToAddress.deleteMany({})
+	await prisma.saveCategory.deleteMany({})
+}
+
+export async function createSaveCategories() {
+	await prisma.saveCategory.createMany({
+		data: [
+			{
+				name: 'SOFT',
+				cost: 1,
+			},
+			{
+				name: 'MEDIUM',
+				cost: 3,
+			},
+			{
+				name: 'HARD',
+				cost: 5,
+			},
+		],
+	})
 }
 
 export async function generateValidToken(user?: User) {

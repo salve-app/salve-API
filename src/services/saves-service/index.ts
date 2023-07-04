@@ -51,6 +51,8 @@ async function getNearbySaves(
 ) {
 	const { id } = await getUserProfileOrThrow(userId)
 
+	throwIfNotANumber(coordinates.latitude, coordinates.longitude, range)
+
 	const nearbySaves = await savesRepository.findNearbySavesByCoordinates(
 		coordinates.latitude,
 		coordinates.longitude,
@@ -145,6 +147,10 @@ export default {
 	getMyActiveSaves,
 	updateSaveStatusToInProgress,
 	updateSaveStatusToComplete,
+}
+
+function throwIfNotANumber(...elements: Array<number>) {
+	if (elements.some((e) => !e)) throw badRequest('Dados inválidos!')
 }
 
 function throwIfProfileCoinsIsLessThanSaveCost(cost: number, coins: number) {

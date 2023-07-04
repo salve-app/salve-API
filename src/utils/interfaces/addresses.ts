@@ -7,3 +7,15 @@ export interface ViaCepResult {
 	uf: string
 	erro?: boolean
 }
+
+export interface Address {
+	cep: string
+	neighborhood: string
+	street: string
+	number: string
+	complement?: string
+	city: string
+	state: string
+	latitude: number
+	longitude: number
+}

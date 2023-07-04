@@ -1,12 +1,14 @@
-export function formatSaveContent(saves) {
+import { RenamedCategories, Save } from '../interfaces/saves'
+
+export function formatSaveContent(saves: Array<Save>) {
 	return saves.map((save) => ({
 		...save,
-		category: { ...save.category, name: SaveCategories[save.category.name] },
+		category: { ...save.category, name: RenamedCategories[save.category.name] },
 	}))
 }
 
 export function getSeparetedSavesAccordinglyUserFunction(
-	saves: Array<any>,
+	saves: Array<Save>,
 	profileId: number
 ) {
 	const requested = saves.filter((save) => save.requester.id === profileId)
@@ -14,10 +16,4 @@ export function getSeparetedSavesAccordinglyUserFunction(
 	const offering = saves.filter((save) => save.provider?.id === profileId)
 
 	return { requested, offering }
-}
-
-enum SaveCategories {
-	SOFT = 'Suave',
-	MEDIUM = 'Da pra aguentar',
-	HARD = 'Urgente',
 }

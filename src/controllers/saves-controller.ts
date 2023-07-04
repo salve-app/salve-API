@@ -139,7 +139,7 @@ export async function updateSaveStatusToInProgress(
 	try {
 		await savesService.updateSaveStatusToInProgress(saveId, userId)
 
-		return res.sendStatus(httpStatus.CREATED)
+		return res.sendStatus(httpStatus.OK)
 	} catch (error) {
 		next(error)
 	}
@@ -159,7 +159,7 @@ export async function updateSaveStatusToComplete(
 	try {
 		await savesService.updateSaveStatusToComplete(saveId, rating, userId)
 
-		return res.sendStatus(httpStatus.CREATED)
+		return res.sendStatus(httpStatus.OK)
 	} catch (error) {
 		next(error)
 	}

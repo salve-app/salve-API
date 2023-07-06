@@ -3,7 +3,7 @@ import userRepository from '@/repositories/users-repository'
 import { Address, Profile, User } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { createSession } from '../auth-service'
-import { conflict, notFound, unauthorized } from '@/errors'
+import { conflict, unauthorized } from '@/errors'
 import { getAddressByCepOrThrow } from '@/utils/helpers/addresses'
 import { badRequest } from '@/errors/badRequest-error'
 

@@ -30,6 +30,22 @@ export async function createProfile(userId: number): Promise<Profile> {
 	})
 }
 
+export async function createProfileWithZeroCoins(
+	userId: number
+): Promise<Profile> {
+	return prisma.profile.create({
+		data: {
+			cpf: generateValidCpf(),
+			birthday: faker.date.past({ years: 30 }).toISOString(),
+			fullName: faker.person.fullName(),
+			gender: 'M',
+			phoneNumber: faker.phone.number('(##) 9####-####'),
+			coins: 0,
+			userId,
+		},
+	})
+}
+
 export function generateValidUser() {
 	return {
 		username: faker.internet.displayName(),

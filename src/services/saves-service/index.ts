@@ -116,7 +116,7 @@ async function updateSaveStatusToInProgress(saveId: number, userId: number) {
 
 	throwIfStatusIsNotCreated(status)
 
-	throwIfChatNotExist(saveId, providerId)
+	await throwIfChatNotExist(saveId, providerId)
 
 	await savesRepository.updateSaveStatusToInProgress(saveId, providerId)
 }

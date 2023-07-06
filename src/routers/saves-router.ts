@@ -10,7 +10,7 @@ import {
 	updateSaveStatusToComplete,
 } from '@/controllers/saves-controller'
 import { authenticateToken, validateBody, validateParams } from '@/middlewares'
-import { idSchema, saveSchema } from '@/schemas'
+import { idSchema, ratingSchema, saveSchema } from '@/schemas'
 import { Router } from 'express'
 
 const savesRouter = Router()
@@ -25,6 +25,11 @@ savesRouter
 	.get('/:id/chat/list', validateParams(idSchema), getSaveChatList)
 	.post('/:id/chat', validateParams(idSchema), createChatMessage)
 	.put('/:id/start', validateParams(idSchema), updateSaveStatusToInProgress)
-	.put('/:id/finish', validateParams(idSchema), updateSaveStatusToComplete)
+	.put(
+		'/:id/finish',
+		validateParams(idSchema),
+		validateBody(ratingSchema),
+		updateSaveStatusToComplete
+	)
 
 export { savesRouter }

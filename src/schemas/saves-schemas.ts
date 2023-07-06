@@ -16,3 +16,7 @@ export const saveSchema = Joi.object({
 		.messages(JOI_ERROR_MESSAGES.SAVE.cost),
 	address: addressInputSchema,
 })
+
+export const ratingSchema = Joi.object({
+	rating: Joi.number().valid(1, 2, 3, 4, 5).required(),
+})

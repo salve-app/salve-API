@@ -1,4 +1,3 @@
-import { MessageInputData } from '@/controllers/saves-controller'
 import chatRepository from '@/repositories/chats-repository'
 import savesRepository from '@/repositories/saves-repository'
 import {
@@ -63,27 +62,6 @@ async function getNearbySaves(
 	return formatSaveContent(nearbySaves)
 }
 
-async function createChatMessage(
-	saveId: number,
-	userId: number,
-	messageData: MessageInputData
-) {
-	const { message } = messageData
-
-	const { id: profileId } = await getUserProfileOrThrow(userId)
-
-	const { requesterId } = await getSaveOrThrow(saveId)
-
-	const { id: chatId } = await getChatOrCreateIfNotExist(
-		messageData.chatId,
-		saveId,
-		requesterId,
-		profileId
-	)
-
-	await chatRepository.createMessage(chatId, message, profileId)
-}
-
 async function getChatMessages(saveId: number, userId: number) {
 	const { id: providerId } = await getUserProfileOrThrow(userId)
 
@@ -139,7 +117,6 @@ async function updateSaveStatusToComplete(
 
 export default {
 	createSave,
-	createChatMessage,
 	getAllSaveCategories,
 	getNearbySaves,
 	getChatMessages,
@@ -167,20 +144,6 @@ export async function getSaveOrThrow(saveId: number) {
 	if (!save) throw notFound('Salve não encontrado!')
 
 	return save
-}
-
-async function getChatOrCreateIfNotExist(
-	chatId: number,
-	saveId: number,
-	requesterId: number,
-	ownerMessageId: number
-) {
-	const chat = await chatRepository.findChatById(chatId)
-
-	if (!chat && ownerMessageId !== requesterId)
-		return chatRepository.createChat(saveId, requesterId, ownerMessageId)
-
-	return chat
 }
 
 async function throwIfChatNotExist(saveId: number, providerId: number) {

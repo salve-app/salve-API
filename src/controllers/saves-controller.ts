@@ -108,25 +108,6 @@ export async function getSaveChatList(
 	}
 }
 
-export async function createChatMessage(
-	req: AuthenticatedRequest,
-	res: Response,
-	next: NextFunction
-) {
-	const saveId = +req.params.id as number
-
-	const { userId } = req
-
-	const messageData = req.body as MessageInputData
-
-	try {
-		await savesService.createChatMessage(saveId, userId, messageData)
-
-		return res.sendStatus(httpStatus.CREATED)
-	} catch (error) {
-		next(error)
-	}
-}
 export async function updateSaveStatusToInProgress(
 	req: AuthenticatedRequest,
 	res: Response,
@@ -163,8 +144,4 @@ export async function updateSaveStatusToComplete(
 	} catch (error) {
 		next(error)
 	}
-}
-export interface MessageInputData {
-	chatId: number
-	message: string
 }

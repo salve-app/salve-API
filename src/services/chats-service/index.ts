@@ -1,7 +1,8 @@
 import chatRepository from '@/repositories/chats-repository'
-
 import { getUserProfileOrThrow } from '../users-service'
 import { forbidden, notFound } from '@/errors'
+import { MessageInputData } from '@/utils/interfaces/chats'
+import { getSaveOrThrow } from '../saves-service'
 
 async function getMessagesByChatId(chatId: number, userId: number) {
 	const { id: profileId } = await getUserProfileOrThrow(userId)
@@ -14,6 +15,27 @@ async function getMessagesByChatId(chatId: number, userId: number) {
 	return { acceptedSave, provider, messages }
 }
 
+async function createChatMessage(
+	chatId: number,
+	userId: number,
+	messageData: MessageInputData
+) {
+	const { message, saveId } = messageData
+
+	const { id: profileId } = await getUserProfileOrThrow(userId)
+
+	const { requesterId } = await getSaveOrThrow(saveId)
+
+	const { id } = await getChatOrCreateIfNotExist(
+		chatId,
+		saveId,
+		requesterId,
+		profileId
+	)
+
+	await chatRepository.createMessage(id, message, profileId)
+}
+
 async function updateProviderAccept(chatId: number, userId: number) {
 	const { id: profileId } = await getUserProfileOrThrow(userId)
 
@@ -24,8 +46,14 @@ async function updateProviderAccept(chatId: number, userId: number) {
 	await chatRepository.updateAcceptedSaveByChatId(chatId)
 }
 
+export default {
+	getMessagesByChatId,
+	updateProviderAccept,
+	createChatMessage,
+}
+
 async function getChatOrThrow(chatId: number) {
-	const chat = chatRepository.findChatById(chatId)
+	const chat = await chatRepository.findChatById(chatId)
 
 	if (!chat) throw notFound('Chat não existe!')
 
@@ -46,7 +74,16 @@ function throwIfRequesterIdIsNotValid(profileId: number, requesterId: number) {
 		throw forbidden('O usuário não tem permissão para fazer isso!')
 }
 
-export default {
-	getMessagesByChatId,
-	updateProviderAccept,
+async function getChatOrCreateIfNotExist(
+	chatId: number,
+	saveId: number,
+	requesterId: number,
+	ownerMessageId: number
+) {
+	const chat = await chatRepository.findChatById(chatId)
+
+	if (!chat && ownerMessageId !== requesterId)
+		return chatRepository.createChat(saveId, requesterId, ownerMessageId)
+
+	return chat
 }

@@ -326,7 +326,7 @@ describe('POST /saves ', () => {
 			const token = await createAddressToken(profile, user)
 
 			const response = await server
-				.post('/users/sign-up/address')
+				.post('/saves')
 				.set('Authorization', `Bearer ${token}`)
 
 			expect(response.status).toBe(httpStatus.UNPROCESSABLE_ENTITY)
@@ -346,7 +346,7 @@ describe('POST /saves ', () => {
 			const invalidBody = { [faker.lorem.word()]: faker.lorem.word() }
 
 			const response = await server
-				.post('/users/sign-up/address')
+				.post('/saves')
 				.send(invalidBody)
 				.set('Authorization', `Bearer ${token}`)
 

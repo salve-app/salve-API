@@ -10,3 +10,7 @@ export interface Message {
 	message: string
 	ownerId: number
 }
+export interface MessageInputData {
+	saveId: number
+	message: string
+}

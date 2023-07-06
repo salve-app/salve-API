@@ -5,7 +5,6 @@ import {
 	getNearbySaves,
 	getMyActiveSaves,
 	getSaveChatList,
-	createChatMessage,
 	updateSaveStatusToInProgress,
 	updateSaveStatusToComplete,
 } from '@/controllers/saves-controller'
@@ -23,7 +22,6 @@ savesRouter
 	.post('/', validateBody(saveSchema), createSave)
 	.get('/:id/chat', validateParams(idSchema), getChatMessages)
 	.get('/:id/chat/list', validateParams(idSchema), getSaveChatList)
-	.post('/:id/chat', validateParams(idSchema), createChatMessage)
 	.put('/:id/start', validateParams(idSchema), updateSaveStatusToInProgress)
 	.put(
 		'/:id/finish',

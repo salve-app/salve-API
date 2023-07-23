@@ -44,7 +44,8 @@ export async function createSession(payload: Object, userId: number) {
 
 async function validatePasswordOrFail(password: string, userPassword: string) {
 	const isPasswordValid = await bcrypt.compare(password, userPassword)
-	if (!isPasswordValid) throw unauthorized()
+
+	if (!isPasswordValid) throw unauthorized('Senha ta errada patrao')
 }
 
 export type SignInParams = {

@@ -15,7 +15,7 @@ jobs:
           envkey_POSTGRES_PASSWORD: "root"
           envkey_POSTGRES_DB: "salve_db_test"
           envkey_DATABASE_URL: "postgresql://postgres:root@postgres:5432/salve_db_test"
-          directory: server
+          directory: .
           file_name: .env.test
       - name: Run tests
         run: docker-compose -f docker-compose.test.yml run api-test npm run test

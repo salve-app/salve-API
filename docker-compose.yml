@@ -1,8 +1,6 @@
 services:
   postgres:
-    build:
-      context: ./
-      dockerfile: Dockerfile.pg
+    image: postgis/postgis
     container_name: postgres
     restart: always
     ports:

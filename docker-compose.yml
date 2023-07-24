@@ -31,6 +31,8 @@ services:
     ports:
       - 80:80
       - 443:443
+    volumes:
+      - ssl-certs:/certs
     depends_on:
       - postgres
       - api
